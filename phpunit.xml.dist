@@ -9,12 +9,12 @@
          processIsolation="false"
          stopOnFailure="false"
          syntaxCheck="false"
-         bootstrap="Tests/bootstrap.php"
+         bootstrap="bootstrap.php"
         >
 
     <testsuites>
         <testsuite name="TestBundle Test Suite">
-            <directory>./Tests</directory>
+            <directory>./src/SolrBundle/Tests</directory>
         </testsuite>
     </testsuites>
 </phpunit>
