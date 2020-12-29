@@ -11,7 +11,7 @@
   "homepage": "https://github.com/daanbiesterbos/SolrBundle",
   "license": "MIT",
   "require": {
-    "php": "^7.3",
+    "php": "^7.2",
     "solarium/solarium": "^4.0",
     "symfony/dependency-injection": "^4.4|^5",
     "symfony/cache": "^4.4|^5",
@@ -19,7 +19,7 @@
     "symfony/config": "^4.4|^5",
     "symfony/doctrine-bridge": "^4.4|^5",
     "minimalcode/search": "^1.0",
-    "ramsey/uuid": "^3.5",
+    "ramsey/uuid": "^3.5|^4.1",
     "myclabs/deep-copy": "^1.6",
     "doctrine/annotations": "^1.4"
   },
