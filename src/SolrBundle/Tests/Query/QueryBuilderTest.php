@@ -1,20 +1,27 @@
 <?php
 
+/*
+ * Solr Bundle
+ * This is a fork of the unmaintained solr bundle from Florian Semm.
+ *
+ * @author Daan Biesterbos     (fork maintainer)
+ * @author Florian Semm (author original bundle)
+ *
+ * Issues can be submitted here:
+ * https://github.com/daanbiesterbos/SolrBundle/issues
+ */
+
 namespace FS\SolrBundle\Tests\Query;
 
 use FS\SolrBundle\Doctrine\Annotation\Field;
 use FS\SolrBundle\Doctrine\Mapper\MetaInformation;
+use FS\SolrBundle\Doctrine\Mapper\SolrMappingException;
 use FS\SolrBundle\Query\QueryBuilder;
 use FS\SolrBundle\SolrInterface;
 
 class QueryBuilderTest extends \PHPUnit\Framework\TestCase
 {
     private $solr;
-
-    protected function setUp(): void
-    {
-        $this->solr = $this->createMock(SolrInterface::class);
-    }
 
     /**
      * @test
@@ -88,15 +95,17 @@ class QueryBuilderTest extends \PHPUnit\Framework\TestCase
 
     /**
      * @test
-     * @expectedException \FS\SolrBundle\Doctrine\Mapper\SolrMappingException
-     * @expectedExceptionMessage $fieldName must not be empty
      */
-    public function setEmpty()
+    public function expectExceptionWhenFieldNameIsEmpty(): void
     {
-        $builder = new QueryBuilder($this->solr, $this->setupMetainformation());
-        $query = $builder
-            ->where('')
-            ->getQuery()->getQuery();
+        $this->expectException(SolrMappingException::class);
+        $this->expectExceptionMessage('$fieldName must not be empty');
+        (new QueryBuilder($this->solr, $this->setupMetainformation()))->where('')->getQuery()->getQuery();
+    }
+
+    protected function setUp(): void
+    {
+        $this->solr = $this->createMock(SolrInterface::class);
     }
 
     /**

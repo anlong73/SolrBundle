@@ -1,5 +1,16 @@
 <?php
 
+/*
+ * Solr Bundle
+ * This is a fork of the unmaintained solr bundle from Florian Semm.
+ *
+ * @author Daan Biesterbos     (fork maintainer)
+ * @author Florian Semm (author original bundle)
+ *
+ * Issues can be submitted here:
+ * https://github.com/daanbiesterbos/SolrBundle/issues
+ */
+
 namespace FS\SolrBundle\Tests\DependencyInjection;
 
 use FS\SolrBundle\DependencyInjection\FSSolrExtension;
@@ -15,34 +26,6 @@ class FSSolrExtensionTest extends \PHPUnit\Framework\TestCase
      * @var ContainerBuilder
      */
     private $container = null;
-
-    protected function setUp(): void
-    {
-        $this->container = new ContainerBuilder();
-    }
-
-    private function enableOdmConfig()
-    {
-        $this->container->setParameter('doctrine_mongodb.odm.document_managers', ['default' => 'odm.default.mananger']);
-    }
-
-    private function enableOrmConfig()
-    {
-        $this->container->setParameter('doctrine.entity_managers', ['default' => 'orm.default.mananger']);
-    }
-
-    private function commonConfig()
-    {
-        return [[
-            'endpoints' => [
-                'default' => [
-                    'host' => '192.168.178.24',
-                    'port' => 8983,
-                    'path' => '/solr/',
-                ],
-            ],
-        ]];
-    }
 
     public function testDoctrineORMSetup()
     {
@@ -91,6 +74,34 @@ class FSSolrExtensionTest extends \PHPUnit\Framework\TestCase
 
         $this->assertTrue($this->container->has('solr.document.orm.subscriber'), 'orm subscriber');
         $this->assertDefinitionHasTag('solr.document.orm.subscriber', 'doctrine.event_subscriber');
+    }
+
+    protected function setUp(): void
+    {
+        $this->container = new ContainerBuilder();
+    }
+
+    private function enableOdmConfig()
+    {
+        $this->container->setParameter('doctrine_mongodb.odm.document_managers', ['default' => 'odm.default.mananger']);
+    }
+
+    private function enableOrmConfig()
+    {
+        $this->container->setParameter('doctrine.entity_managers', ['default' => 'orm.default.mananger']);
+    }
+
+    private function commonConfig()
+    {
+        return [[
+            'endpoints' => [
+                'default' => [
+                    'host' => '192.168.178.24',
+                    'port' => 8983,
+                    'path' => '/solr/',
+                ],
+            ],
+        ]];
     }
 
     private function assertClassnameResolverHasOrmDefaultConfiguration()

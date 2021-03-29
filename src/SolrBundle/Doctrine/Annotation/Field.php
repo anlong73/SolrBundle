@@ -1,16 +1,61 @@
 <?php
+
+/*
+ * Solr Bundle
+ * This is a fork of the unmaintained solr bundle from Florian Semm.
+ *
+ * @author Daan Biesterbos     (fork maintainer)
+ * @author Florian Semm (author original bundle)
+ *
+ * Issues can be submitted here:
+ * https://github.com/daanbiesterbos/SolrBundle/issues
+ */
+
 namespace FS\SolrBundle\Doctrine\Annotation;
 
 use Doctrine\Common\Annotations\Annotation;
-use phpDocumentor\Reflection\DocBlock\Type\Collection;
 
 /**
- * Defines a field of a solr-document
+ * Defines a field of a solr-document.
  *
  * @Annotation
  */
 class Field extends Annotation
 {
+    /**
+     * @var array
+     */
+    private static $TYP_MAPPING = [];
+
+    /**
+     * @var array
+     */
+    private static $TYP_SIMPLE_MAPPING = [
+        'string' => '_s',
+        'text' => '_t',
+        'date' => '_dt',
+        'boolean' => '_b',
+        'integer' => '_i',
+        'long' => '_l',
+        'float' => '_f',
+        'double' => '_d',
+        'datetime' => '_dt',
+        'point' => '_p',
+    ];
+
+    /**
+     * @var array
+     */
+    private static $TYP_COMPLEX_MAPPING = [
+        'doubles' => '_ds',
+        'floats' => '_fs',
+        'longs' => '_ls',
+        'integers' => '_is',
+        'booleans' => '_bs',
+        'dates' => '_dts',
+        'texts' => '_txt',
+        'strings' => '_ss',
+    ];
 
     /**
      * @var string
@@ -43,42 +88,23 @@ class Field extends Annotation
     public $nestedClass;
 
     /**
-     * @var array
+     * @return string
      */
-    private static $TYP_MAPPING = array();
+    public function __toString()
+    {
+        return $this->name;
+    }
 
     /**
-     * @var array
+     * @return array
      */
-    private static $TYP_SIMPLE_MAPPING = array(
-        'string' => '_s',
-        'text' => '_t',
-        'date' => '_dt',
-        'boolean' => '_b',
-        'integer' => '_i',
-        'long' => '_l',
-        'float' => '_f',
-        'double' => '_d',
-        'datetime' => '_dt',
-        'point' => '_p'
-    );
+    public static function getComplexFieldMapping()
+    {
+        return self::$TYP_COMPLEX_MAPPING;
+    }
 
     /**
-     * @var array
-     */
-    private static $TYP_COMPLEX_MAPPING = array(
-        'doubles' => '_ds',
-        'floats' => '_fs',
-        'longs' => '_ls',
-        'integers' => '_is',
-        'booleans' => '_bs',
-        'dates' => '_dts',
-        'texts' => '_txt',
-        'strings' => '_ss',
-    );
-
-    /**
-     * returns field name with type-suffix:
+     * returns field name with type-suffix:.
      *
      * eg: title_s
      *
@@ -88,31 +114,11 @@ class Field extends Annotation
      */
     public function getNameWithAlias()
     {
-        return $this->normalizeName($this->name) . $this->getTypeSuffix($this->type);
+        return $this->normalizeName($this->name).$this->getTypeSuffix($this->type);
     }
 
     /**
-     * @param string $type
-     *
-     * @return string
-     */
-    private function getTypeSuffix($type)
-    {
-        self::$TYP_MAPPING = array_merge(self::$TYP_COMPLEX_MAPPING, self::$TYP_SIMPLE_MAPPING);
-
-        if ($type == '') {
-            return '';
-        }
-
-        if (!isset(self::$TYP_MAPPING[$this->type])) {
-            return '';
-        }
-
-        return self::$TYP_MAPPING[$this->type];
-    }
-
-    /**
-     * Related object getter name
+     * Related object getter name.
      *
      * @return string
      */
@@ -138,14 +144,6 @@ class Field extends Annotation
     }
 
     /**
-     * @return string
-     */
-    public function __toString()
-    {
-        return $this->name;
-    }
-
-    /**
      * @throws \InvalidArgumentException if boost is not a number
      *
      * @return number
@@ -156,11 +154,31 @@ class Field extends Annotation
             throw new \InvalidArgumentException(sprintf('Invalid boost value %s', $this->boost));
         }
 
-        if (($boost = floatval($this->boost)) > 0) {
+        if (($boost = (float) ($this->boost)) > 0) {
             return $boost;
         }
 
         return null;
+    }
+
+    /**
+     * @param string $type
+     *
+     * @return string
+     */
+    private function getTypeSuffix($type)
+    {
+        self::$TYP_MAPPING = array_merge(self::$TYP_COMPLEX_MAPPING, self::$TYP_SIMPLE_MAPPING);
+
+        if ('' === $type) {
+            return '';
+        }
+
+        if (!isset(self::$TYP_MAPPING[$this->type])) {
+            return '';
+        }
+
+        return self::$TYP_MAPPING[$this->type];
     }
 
     /**
@@ -178,19 +196,11 @@ class Field extends Annotation
         $words = preg_split('/(?=[A-Z])/', $name);
         $words = array_map(
             function ($value) {
-                return strtolower($value);
+                return mb_strtolower($value);
             },
             $words
         );
 
         return implode('_', $words);
-    }
-
-    /**
-     * @return array
-     */
-    public static function getComplexFieldMapping()
-    {
-        return self::$TYP_COMPLEX_MAPPING;
     }
 }

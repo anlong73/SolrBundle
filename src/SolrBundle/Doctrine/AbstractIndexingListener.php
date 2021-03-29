@@ -1,8 +1,18 @@
 <?php
 
+/*
+ * Solr Bundle
+ * This is a fork of the unmaintained solr bundle from Florian Semm.
+ *
+ * @author Daan Biesterbos     (fork maintainer)
+ * @author Florian Semm (author original bundle)
+ *
+ * Issues can be submitted here:
+ * https://github.com/daanbiesterbos/SolrBundle/issues
+ */
+
 namespace FS\SolrBundle\Doctrine;
 
-use Doctrine\ORM\Event\LifecycleEventArgs;
 use FS\SolrBundle\Doctrine\Mapper\MetaInformationFactory;
 use FS\SolrBundle\Doctrine\Mapper\SolrMappingException;
 use FS\SolrBundle\SolrInterface;
@@ -51,7 +61,7 @@ class AbstractIndexingListener
 
         $metaInformation = $this->metaInformationFactory->loadInformation($entity);
 
-        $documentChangeSet = array();
+        $documentChangeSet = [];
 
         /* Check all Solr fields on this entity and check if this field is in the change set */
         foreach ($metaInformation->getFields() as $field) {

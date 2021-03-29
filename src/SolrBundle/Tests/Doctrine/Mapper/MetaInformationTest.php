@@ -1,5 +1,16 @@
 <?php
 
+/*
+ * Solr Bundle
+ * This is a fork of the unmaintained solr bundle from Florian Semm.
+ *
+ * @author Daan Biesterbos     (fork maintainer)
+ * @author Florian Semm (author original bundle)
+ *
+ * Issues can be submitted here:
+ * https://github.com/daanbiesterbos/SolrBundle/issues
+ */
+
 namespace FS\SolrBundle\Tests\Doctrine\Mapper;
 
 use FS\SolrBundle\Doctrine\Mapper\MetaInformation;
@@ -9,15 +20,6 @@ use FS\SolrBundle\Doctrine\Mapper\MetaInformation;
  */
 class MetaInformationTest extends \PHPUnit\Framework\TestCase
 {
-    private function createFieldObject($name, $value)
-    {
-        $value = new \stdClass();
-        $value->name = $name;
-        $value->value = $value;
-
-        return $value;
-    }
-
     public function testHasCallback_CallbackSet()
     {
         $information = new MetaInformation();
@@ -31,5 +33,14 @@ class MetaInformationTest extends \PHPUnit\Framework\TestCase
         $information = new MetaInformation();
 
         $this->assertFalse($information->hasSynchronizationFilter(), 'has no callback');
+    }
+
+    private function createFieldObject($name, $value)
+    {
+        $value = new \stdClass();
+        $value->name = $name;
+        $value->value = $value;
+
+        return $value;
     }
 }

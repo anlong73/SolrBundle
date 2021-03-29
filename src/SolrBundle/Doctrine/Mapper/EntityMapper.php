@@ -1,12 +1,21 @@
 <?php
+
+/*
+ * Solr Bundle
+ * This is a fork of the unmaintained solr bundle from Florian Semm.
+ *
+ * @author Daan Biesterbos     (fork maintainer)
+ * @author Florian Semm (author original bundle)
+ *
+ * Issues can be submitted here:
+ * https://github.com/daanbiesterbos/SolrBundle/issues
+ */
+
 namespace FS\SolrBundle\Doctrine\Mapper;
 
 use FS\SolrBundle\Doctrine\Hydration\HydrationModes;
 use FS\SolrBundle\Doctrine\Hydration\HydratorInterface;
 use FS\SolrBundle\Doctrine\Mapper\Factory\DocumentFactory;
-use FS\SolrBundle\Doctrine\Mapper\Mapping\AbstractDocumentCommand;
-use FS\SolrBundle\Doctrine\Annotation\Index as Solr;
-use Solarium\QueryType\Update\Query\Document\Document;
 
 class EntityMapper implements EntityMapperInterface
 {
@@ -36,17 +45,19 @@ class EntityMapper implements EntityMapperInterface
     private $documentFactory;
 
     /**
-     * @param HydratorInterface      $doctrineHydrator
+     * @param HydratorInterface      $dbHydrator
      * @param HydratorInterface      $indexHydrator
      * @param MetaInformationFactory $metaInformationFactory
      */
-    public function __construct(HydratorInterface $doctrineHydrator, HydratorInterface $indexHydrator, MetaInformationFactory $metaInformationFactory)
-    {
-        $this->doctrineHydrator = $doctrineHydrator;
+    public function __construct(
+        HydratorInterface $dbHydrator,
+        HydratorInterface $indexHydrator,
+        MetaInformationFactory $metaInformationFactory
+    ) {
+        $this->doctrineHydrator = $dbHydrator;
         $this->indexHydrator = $indexHydrator;
         $this->metaInformationFactory = $metaInformationFactory;
         $this->documentFactory = new DocumentFactory($metaInformationFactory);
-
         $this->hydrationMode = HydrationModes::HYDRATE_DOCTRINE;
     }
 
@@ -69,15 +80,15 @@ class EntityMapper implements EntityMapperInterface
 
         $metaInformation = $this->metaInformationFactory->loadInformation($sourceTargetEntity);
 
-        if ($metaInformation->isDoctrineEntity() === false && $this->hydrationMode == HydrationModes::HYDRATE_DOCTRINE) {
+        if (false === $metaInformation->isDoctrineEntity() && HydrationModes::HYDRATE_DOCTRINE === $this->hydrationMode) {
             throw new SolrMappingException(sprintf('Please check your config. Given entity is not a Doctrine entity, but Doctrine hydration is enabled. Use setHydrationMode(HydrationModes::HYDRATE_DOCTRINE) to fix this.'));
         }
 
-        if ($this->hydrationMode == HydrationModes::HYDRATE_INDEX) {
+        if (HydrationModes::HYDRATE_INDEX === $this->hydrationMode) {
             return $this->indexHydrator->hydrate($document, $metaInformation);
         }
 
-        if ($this->hydrationMode == HydrationModes::HYDRATE_DOCTRINE) {
+        if (HydrationModes::HYDRATE_DOCTRINE === $this->hydrationMode) {
             return $this->doctrineHydrator->hydrate($document, $metaInformation);
         }
     }

@@ -1,12 +1,21 @@
 <?php
 
+/*
+ * Solr Bundle
+ * This is a fork of the unmaintained solr bundle from Florian Semm.
+ *
+ * @author Daan Biesterbos     (fork maintainer)
+ * @author Florian Semm (author original bundle)
+ *
+ * Issues can be submitted here:
+ * https://github.com/daanbiesterbos/SolrBundle/issues
+ */
+
 namespace FS\SolrBundle\Doctrine\ODM\Listener;
 
 use Doctrine\Common\EventSubscriber;
 use Doctrine\ODM\MongoDB\Event\LifecycleEventArgs;
 use FS\SolrBundle\Doctrine\AbstractIndexingListener;
-use FS\SolrBundle\SolrInterface;
-use Psr\Log\LoggerInterface;
 
 class DocumentIndexerSubscriber extends AbstractIndexingListener implements EventSubscriber
 {
@@ -15,7 +24,7 @@ class DocumentIndexerSubscriber extends AbstractIndexingListener implements Even
      */
     public function getSubscribedEvents()
     {
-        return array('postUpdate', 'postPersist', 'preRemove');
+        return ['postUpdate', 'postPersist', 'preRemove'];
     }
 
     /**
@@ -28,7 +37,7 @@ class DocumentIndexerSubscriber extends AbstractIndexingListener implements Even
         try {
             $doctrineChangeSet = $args->getDocumentManager()->getUnitOfWork()->getDocumentChangeSet($document);
 
-            if ($this->hasChanged($doctrineChangeSet, $document) == false) {
+            if (false === $this->hasChanged($doctrineChangeSet, $document)) {
                 return;
             }
 

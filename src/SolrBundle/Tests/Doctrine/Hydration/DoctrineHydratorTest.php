@@ -1,10 +1,21 @@
 <?php
 
+/*
+ * Solr Bundle
+ * This is a fork of the unmaintained solr bundle from Florian Semm.
+ *
+ * @author Daan Biesterbos     (fork maintainer)
+ * @author Florian Semm (author original bundle)
+ *
+ * Issues can be submitted here:
+ * https://github.com/daanbiesterbos/SolrBundle/issues
+ */
+
 namespace FS\SolrBundle\Tests\Doctrine\Hydration;
 
-use Doctrine\Common\Persistence\ManagerRegistry;
-use Doctrine\Common\Persistence\ObjectManager;
-use Doctrine\Common\Persistence\ObjectRepository;
+use Doctrine\Persistence\ManagerRegistry;
+use Doctrine\Persistence\ObjectManager;
+use Doctrine\Persistence\ObjectRepository;
 use FS\SolrBundle\Doctrine\Annotation\AnnotationReader;
 use FS\SolrBundle\Doctrine\Hydration\DoctrineHydrator;
 use FS\SolrBundle\Doctrine\Hydration\DoctrineValueHydrator;
@@ -27,11 +38,6 @@ class DoctrineHydratorTest extends \PHPUnit\Framework\TestCase
      */
     private $reader;
 
-    protected function setUp(): void
-    {
-        $this->reader = new AnnotationReader(new \Doctrine\Common\Annotations\AnnotationReader());
-    }
-
     /**
      * @test
      */
@@ -43,7 +49,7 @@ class DoctrineHydratorTest extends \PHPUnit\Framework\TestCase
         $repository->expects($this->once())
             ->method('find')
             ->with(1)
-            ->will($this->returnValue($fetchedFromDoctrine));
+            ->willReturn($fetchedFromDoctrine);
 
         $entity = new ValidTestEntity();
         $entity->setId(1);
@@ -73,7 +79,7 @@ class DoctrineHydratorTest extends \PHPUnit\Framework\TestCase
         $odmRepository->expects($this->once())
             ->method('find')
             ->with(1)
-            ->will($this->returnValue($fetchedFromDoctrine));
+            ->willReturn($fetchedFromDoctrine);
 
         $entity = new ValidOdmTestDocument();
         $entity->setId(1);
@@ -120,7 +126,7 @@ class DoctrineHydratorTest extends \PHPUnit\Framework\TestCase
         $repository->expects($this->once())
             ->method('find')
             ->with(1)
-            ->will($this->returnValue($targetEntity));
+            ->willReturn($targetEntity);
 
         $ormManager = $this->setupManager($metainformations, $repository);
 
@@ -147,7 +153,7 @@ class DoctrineHydratorTest extends \PHPUnit\Framework\TestCase
         $repository->expects($this->once())
             ->method('find')
             ->with(1)
-            ->will($this->returnValue(null));
+            ->willReturn(null);
 
         $entity = new ValidTestEntity();
         $entity->setId(1);
@@ -167,6 +173,11 @@ class DoctrineHydratorTest extends \PHPUnit\Framework\TestCase
 
         $this->assertEquals($metainformations->getEntity(), $entity);
         $this->assertEquals($entity, $hydratedDocument);
+    }
+
+    protected function setUp(): void
+    {
+        $this->reader = new AnnotationReader(new \Doctrine\Common\Annotations\AnnotationReader());
     }
 
     /**
@@ -192,12 +203,12 @@ class DoctrineHydratorTest extends \PHPUnit\Framework\TestCase
         $manager->expects($this->once())
             ->method('getRepository')
             ->with($metainformations->getClassName())
-            ->will($this->returnValue($repository));
+            ->willReturn($repository);
 
         $managerRegistry = $this->createMock(ManagerRegistry::class);
         $managerRegistry->expects($this->once())
             ->method('getManager')
-            ->will($this->returnValue($manager));
+            ->willReturn($manager);
 
         return $managerRegistry;
     }

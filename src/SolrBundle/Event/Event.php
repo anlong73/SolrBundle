@@ -1,4 +1,16 @@
 <?php
+
+/*
+ * Solr Bundle
+ * This is a fork of the unmaintained solr bundle from Florian Semm.
+ *
+ * @author Daan Biesterbos     (fork maintainer)
+ * @author Florian Semm (author original bundle)
+ *
+ * Issues can be submitted here:
+ * https://github.com/daanbiesterbos/SolrBundle/issues
+ */
+
 namespace FS\SolrBundle\Event;
 
 use FS\SolrBundle\Doctrine\Mapper\MetaInformationInterface;
@@ -18,7 +30,7 @@ class Event extends BaseEvent
     private $metainformation = null;
 
     /**
-     * something like 'update-solr-document'
+     * something like 'update-solr-document'.
      *
      * @var string
      */
@@ -40,8 +52,7 @@ class Event extends BaseEvent
         MetaInformationInterface $metainformation = null,
         $solrAction = '',
         Event $sourceEvent = null
-    )
-    {
+    ) {
         $this->client = $client;
         $this->metainformation = $metainformation;
         $this->solrAction = $solrAction;
@@ -77,6 +88,6 @@ class Event extends BaseEvent
      */
     public function hasSourceEvent()
     {
-        return $this->sourceEvent !== null;
+        return null !== $this->sourceEvent;
     }
 }

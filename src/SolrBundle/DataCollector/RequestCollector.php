@@ -1,5 +1,16 @@
 <?php
 
+/*
+ * Solr Bundle
+ * This is a fork of the unmaintained solr bundle from Florian Semm.
+ *
+ * @author Daan Biesterbos     (fork maintainer)
+ * @author Florian Semm (author original bundle)
+ *
+ * Issues can be submitted here:
+ * https://github.com/daanbiesterbos/SolrBundle/issues
+ */
+
 namespace FS\SolrBundle\DataCollector;
 
 use FS\SolrBundle\Logging\DebugLogger;
@@ -32,7 +43,7 @@ class RequestCollector extends DataCollector
         $this->data = [
             'queries' => array_map(function ($query) {
                 return $this->parseQuery($query);
-            }, $this->logger->getQueries())
+            }, $this->logger->getQueries()),
         ];
     }
 

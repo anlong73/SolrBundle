@@ -1,5 +1,16 @@
 <?php
 
+/*
+ * Solr Bundle
+ * This is a fork of the unmaintained solr bundle from Florian Semm.
+ *
+ * @author Daan Biesterbos     (fork maintainer)
+ * @author Florian Semm (author original bundle)
+ *
+ * Issues can be submitted here:
+ * https://github.com/daanbiesterbos/SolrBundle/issues
+ */
+
 namespace FS\SolrBundle\Doctrine\Mapper\Factory;
 
 use Doctrine\Common\Collections\Collection;
@@ -28,14 +39,14 @@ class DocumentFactory
     /**
      * @param MetaInformationInterface $metaInformation
      *
-     * @return null|Document
-     *
      * @throws SolrMappingException if no id is set
+     *
+     * @return Document|null
      */
     public function createDocument(MetaInformationInterface $metaInformation)
     {
         $fields = $metaInformation->getFields();
-        if (count($fields) == 0) {
+        if (!count($fields)) {
             return null;
         }
 
@@ -45,7 +56,7 @@ class DocumentFactory
 
         $documentId = $metaInformation->getDocumentKey();
         if ($metaInformation->generateDocumentId()) {
-            $documentId = $metaInformation->getDocumentName() . '_' . Uuid::uuid1()->toString();
+            $documentId = $metaInformation->getDocumentName().'_'.Uuid::uuid1()->toString();
         }
 
         $document = new Document();
@@ -61,11 +72,11 @@ class DocumentFactory
             $fieldValue = $field->getValue();
             if (($fieldValue instanceof Collection || is_array($fieldValue)) && $field->nestedClass) {
                 $this->mapCollectionField($document, $field, $metaInformation->getEntity());
-            } else if (is_object($fieldValue) && $field->nestedClass) { // index sinsgle object as nested child-document
+            } elseif (is_object($fieldValue) && $field->nestedClass) { // index single object as nested child-document
                 $document->addField('_childDocuments_', [$this->objectToDocument($fieldValue)], $field->getBoost());
-            } else if (is_object($fieldValue) && !$field->nestedClass) { // index object as "flat" string, call getter
+            } elseif (is_object($fieldValue) && !$field->nestedClass) { // index object as "flat" string, call getter
                 $document->addField($field->getNameWithAlias(), $this->mapObjectField($field), $field->getBoost());
-            } else if ($field->getter && $fieldValue) { // call getter to transform data (json to array, etc.)
+            } elseif ($field->getter && $fieldValue) { // call getter to transform data (json to array, etc.)
                 $getterValue = $this->callGetterMethod($metaInformation->getEntity(), $field->getGetterName());
                 $document->addField($field->getNameWithAlias(), $getterValue, $field->getBoost());
             } else { // field contains simple data-type
@@ -83,9 +94,9 @@ class DocumentFactory
     /**
      * @param Field $field
      *
-     * @return array|string
-     *
      * @throws SolrMappingException if getter return value is object
+     *
+     * @return array|string
      */
     private function mapObjectField(Field $field)
     {
@@ -94,7 +105,7 @@ class DocumentFactory
         if (empty($getter)) {
             throw new SolrMappingException(sprintf('Please configure a getter for property "%s" in class "%s"', $field->name, get_class($value)));
         }
-        
+
         $getterReturnValue = $this->callGetterMethod($value, $getter);
 
         if (is_object($getterReturnValue)) {
@@ -108,15 +119,15 @@ class DocumentFactory
      * @param object $object
      * @param string $getter
      *
-     * @return mixed
-     *
      * @throws SolrMappingException if given getter does not exists
+     *
+     * @return mixed
      */
     private function callGetterMethod($object, $getter)
     {
         $methodName = $getter;
-        if (strpos($getter, '(') !== false) {
-            $methodName = substr($getter, 0, strpos($getter, '('));
+        if (false !== mb_strpos($getter, '(')) {
+            $methodName = mb_substr($getter, 0, mb_strpos($getter, '('));
         }
 
         if (!method_exists($object, $methodName)) {
@@ -125,8 +136,8 @@ class DocumentFactory
 
         $method = new \ReflectionMethod($object, $methodName);
         // getter with arguments
-        if (strpos($getter, ')') !== false) {
-            $getterArguments = explode(',', substr($getter, strpos($getter, '(') + 1, -1));
+        if (false !== mb_strpos($getter, ')')) {
+            $getterArguments = explode(',', mb_substr($getter, mb_strpos($getter, '(') + 1, -1));
             $getterArguments = array_map(function ($parameter) {
                 return trim(preg_replace('#[\'"]#', '', $parameter));
             }, $getterArguments);
@@ -141,9 +152,9 @@ class DocumentFactory
      * @param Field  $field
      * @param string $sourceTargetClass
      *
-     * @return array
-     *
      * @throws SolrMappingException if no getter method was found
+     *
+     * @return array
      */
     private function mapCollectionField($document, Field $field, $sourceTargetObject)
     {
@@ -151,11 +162,11 @@ class DocumentFactory
         $collection = $field->getValue();
         $getter = $field->getGetterName();
 
-        if ($getter != '') {
+        if (!empty($getter)) {
             $collection = $this->callGetterMethod($sourceTargetObject, $getter);
 
             $collection = array_filter($collection, function ($value) {
-                return $value !== null;
+                return null !== $value;
             });
         }
 
@@ -178,9 +189,9 @@ class DocumentFactory
     /**
      * @param mixed $value
      *
-     * @return array
-     *
      * @throws SolrMappingException
+     *
+     * @return array
      */
     private function objectToDocument($value)
     {

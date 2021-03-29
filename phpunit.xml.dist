@@ -8,13 +8,15 @@
          convertWarningsToExceptions="true"
          processIsolation="false"
          stopOnFailure="false"
-         syntaxCheck="false"
          bootstrap="bootstrap.php"
         >
-
     <testsuites>
-        <testsuite name="TestBundle Test Suite">
+        <testsuite name="SolrBundleUnitTests">
             <directory>./src/SolrBundle/Tests</directory>
+            <exclude>./src/SolrBundle/Tests/Integration</exclude>
+        </testsuite>
+        <testsuite name="SolrBundleIntegrationTests">
+            <directory>./src/SolrBundle/Tests/Integration</directory>
         </testsuite>
     </testsuites>
 </phpunit>

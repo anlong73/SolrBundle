@@ -1,5 +1,16 @@
 <?php
 
+/*
+ * Solr Bundle
+ * This is a fork of the unmaintained solr bundle from Florian Semm.
+ *
+ * @author Daan Biesterbos     (fork maintainer)
+ * @author Florian Semm (author original bundle)
+ *
+ * Issues can be submitted here:
+ * https://github.com/daanbiesterbos/SolrBundle/issues
+ */
+
 namespace FS\SolrBundle\Doctrine\ClassnameResolver;
 
 use Doctrine\ODM\MongoDB\Configuration as OdmConfiguration;
@@ -13,7 +24,7 @@ use Symfony\Component\Cache\Exception\CacheException;
 use Symfony\Contracts\Cache\CacheInterface;
 
 /**
- * Class collects document and entity aliases from ORM and ODM configuration
+ * Class collects document and entity aliases from ORM and ODM configuration.
  */
 class KnownNamespaceAliases
 {
@@ -24,12 +35,12 @@ class KnownNamespaceAliases
     /**
      * @var array
      */
-    private $knownNamespaceAlias = array();
+    private $knownNamespaceAlias = [];
 
     /**
      * @var array
      */
-    private $entityClassnames = array();
+    private $entityClassnames = [];
 
     /**
      * @var CacheInterface
@@ -61,29 +72,13 @@ class KnownNamespaceAliases
      * MappingDriverDecorator constructor.
      *
      * @param KnownNamespaceAliases $internal
-     * @param LoggerInterface $logger
-     * @param string $cacheDir
+     * @param LoggerInterface       $logger
+     * @param string                $cacheDir
      */
     public function __construct(LoggerInterface $logger, string $cacheDir)
     {
         $this->cacheDir = $cacheDir;
         $this->logger = $logger;
-    }
-
-    /**
-     * Commit the cached class names.
-     */
-    public function __destruct()
-    {
-        if ($this->cacheAlreadyExisted === false) {
-            try {
-                $this->getClassCache()->commit();
-            } catch(\Exception $e) {
-                $this->logger->alert(strtr(self::CACHE_NOT_COMMITTED_ERROR, [
-                    '{error}' => $e->getMessage()
-                ]));
-            }
-        }
     }
 
     /**
@@ -106,33 +101,6 @@ class KnownNamespaceAliases
         if ($configuration->getMetadataDriverImpl()) {
             $this->processClassNames($configuration->getMetadataDriverImpl());
         }
-    }
-
-    /**
-     * @param MappingDriver $driver
-     * @throws CacheException
-     * @throws \Psr\Cache\InvalidArgumentException
-     */
-    protected function processClassNames(MappingDriver $driver): void
-    {
-        $cache = $this->getClassCache();
-        $cacheItem = $cache->getItem(self::CACHE_KEY);
-
-        if ($this->cacheAlreadyExisted === true && $cacheItem->isHit()) {
-            $classNames = $cacheItem->get();
-            if (!empty($classNames)) {
-                $this->entityClassnames = $classNames;
-
-                return;
-            }
-
-            // Fallback in case that  the cache is empty / corrupted somehow
-            $this->cacheAlreadyExisted = false;
-        }
-
-        $this->entityClassnames = array_merge($this->entityClassnames, $driver->getAllClassNames());
-        $cacheItem->set($this->entityClassnames);
-        $cache->saveDeferred($cacheItem);
     }
 
     /**
@@ -164,7 +132,7 @@ class KnownNamespaceAliases
      */
     public function getAllNamespaceAliases()
     {
-        return array_keys($this->knownNamespaceAlias);
+        return $this->knownNamespaceAlias;
     }
 
     /**
@@ -176,14 +144,42 @@ class KnownNamespaceAliases
     }
 
     /**
-     * @return CacheItemPoolInterface
+     * @param MappingDriver $driver
      *
+     * @throws CacheException
+     * @throws \Psr\Cache\InvalidArgumentException
+     */
+    protected function processClassNames(MappingDriver $driver): void
+    {
+        $cache = $this->getClassCache();
+        $cacheItem = $cache->getItem(self::CACHE_KEY);
+
+        if (true === $this->cacheAlreadyExisted && $cacheItem->isHit()) {
+            $classNames = $cacheItem->get();
+            if (!empty($classNames)) {
+                $this->entityClassnames = $classNames;
+
+                return;
+            }
+
+            // Fallback in case that  the cache is empty / corrupted somehow
+            $this->cacheAlreadyExisted = false;
+        }
+
+        $this->entityClassnames = array_merge($this->entityClassnames, $driver->getAllClassNames());
+        $cacheItem->set($this->entityClassnames);
+        $cache->saveDeferred($cacheItem);
+    }
+
+    /**
      * @throws \Symfony\Component\Cache\Exception\CacheException
+     *
+     * @return CacheItemPoolInterface
      */
     private function getClassCache(): CacheItemPoolInterface
     {
         // Adapter that writes the classnames to a PHP file in the cache directory.
-        if ($this->classCache === null) {
+        if (null === $this->classCache) {
             try {
                 $this->classCache = new PhpFilesAdapter(
                     'app.class_cache',
@@ -193,11 +189,9 @@ class KnownNamespaceAliases
                 );
 
                 $this->cacheAlreadyExisted = $this->classCache->hasItem(self::CACHE_KEY);
-
-            } catch(CacheException $e) {
-
+            } catch (CacheException $e) {
                 $this->logger->alert(strtr(self::CACHE_NOT_CREATED_ERROR, [
-                    '{error}' => $e->getMessage()
+                    '{error}' => $e->getMessage(),
                 ]));
 
                 $this->classCache = new NullAdapter();
@@ -207,5 +201,21 @@ class KnownNamespaceAliases
         }
 
         return $this->classCache;
+    }
+
+    /**
+     * Commit the cached class names.
+     */
+    public function __destruct()
+    {
+        if (false === $this->cacheAlreadyExisted) {
+            try {
+                $this->getClassCache()->commit();
+            } catch (\Exception $e) {
+                $this->logger->alert(strtr(self::CACHE_NOT_COMMITTED_ERROR, [
+                    '{error}' => $e->getMessage(),
+                ]));
+            }
+        }
     }
 }

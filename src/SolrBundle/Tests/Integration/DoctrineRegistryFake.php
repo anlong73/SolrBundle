@@ -1,5 +1,16 @@
 <?php
 
+/*
+ * Solr Bundle
+ * This is a fork of the unmaintained solr bundle from Florian Semm.
+ *
+ * @author Daan Biesterbos     (fork maintainer)
+ * @author Florian Semm (author original bundle)
+ *
+ * Issues can be submitted here:
+ * https://github.com/daanbiesterbos/SolrBundle/issues
+ */
+
 namespace FS\SolrBundle\Tests\Integration;
 
 use Doctrine\ORM\EntityManager;
@@ -64,7 +75,7 @@ class DoctrineRegistryFake implements RegistryInterface
      *
      * @param string $name the object manager name (null for the default one)
      *
-     * @return \Doctrine\Common\Persistence\ObjectManager
+     * @return \Doctrine\Persistence\ObjectManager
      */
     public function getManager($name = null)
     {
@@ -74,7 +85,7 @@ class DoctrineRegistryFake implements RegistryInterface
     /**
      * Gets an array of all registered object managers.
      *
-     * @return \Doctrine\Common\Persistence\ObjectManager[] An array of ObjectManager instances
+     * @return \Doctrine\Persistence\ObjectManager[] An array of ObjectManager instances
      */
     public function getManagers()
     {
@@ -96,7 +107,7 @@ class DoctrineRegistryFake implements RegistryInterface
      *
      * @param string|null $name the object manager name (null for the default one)
      *
-     * @return \Doctrine\Common\Persistence\ObjectManager
+     * @return \Doctrine\Persistence\ObjectManager
      */
     public function resetManager($name = null)
     {
@@ -133,7 +144,7 @@ class DoctrineRegistryFake implements RegistryInterface
      * @param string $persistentObject      the name of the persistent object
      * @param string $persistentManagerName the object manager name (null for the default one)
      *
-     * @return \Doctrine\Common\Persistence\ObjectRepository
+     * @return \Doctrine\Persistence\ObjectRepository
      */
     public function getRepository($persistentObject, $persistentManagerName = null)
     {
@@ -145,7 +156,7 @@ class DoctrineRegistryFake implements RegistryInterface
      *
      * @param string $class a persistent object class name
      *
-     * @return \Doctrine\Common\Persistence\ObjectManager|null
+     * @return \Doctrine\Persistence\ObjectManager|null
      */
     public function getManagerForClass($class)
     {

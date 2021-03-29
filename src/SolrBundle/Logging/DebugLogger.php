@@ -1,9 +1,20 @@
 <?php
 
+/*
+ * Solr Bundle
+ * This is a fork of the unmaintained solr bundle from Florian Semm.
+ *
+ * @author Daan Biesterbos     (fork maintainer)
+ * @author Florian Semm (author original bundle)
+ *
+ * Issues can be submitted here:
+ * https://github.com/daanbiesterbos/SolrBundle/issues
+ */
+
 namespace FS\SolrBundle\Logging;
 
 /**
- * Logs the current request and information about this request
+ * Logs the current request and information about this request.
  */
 class DebugLogger implements SolrLoggerInterface
 {
@@ -18,7 +29,7 @@ class DebugLogger implements SolrLoggerInterface
     private $queries = [];
 
     /**
-     * @var integer
+     * @var int
      */
     private $currentQuery = 0;
 
@@ -37,8 +48,8 @@ class DebugLogger implements SolrLoggerInterface
     {
         $this->start = microtime(true);
         $this->queries[++$this->currentQuery] = [
-            'request'       => $request,
-            'executionMS'   => 0
+            'request' => $request,
+            'executionMS' => 0,
         ];
     }
 
@@ -47,6 +58,6 @@ class DebugLogger implements SolrLoggerInterface
      */
     public function stopRequest()
     {
-        $this->queries[$this->currentQuery]['executionMS']  = microtime(true) - $this->start;
+        $this->queries[$this->currentQuery]['executionMS'] = microtime(true) - $this->start;
     }
 }

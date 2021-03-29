@@ -2,32 +2,42 @@
 
 declare(strict_types=1);
 
+/*
+ * Solr Bundle
+ * This is a fork of the unmaintained solr bundle from Florian Semm.
+ *
+ * @author Daan Biesterbos     (fork maintainer)
+ * @author Florian Semm (author original bundle)
+ *
+ * Issues can be submitted here:
+ * https://github.com/daanbiesterbos/SolrBundle/issues
+ */
+
 namespace FS\SolrBundle;
 
 use FS\SolrBundle\Client\Solarium\SolariumMulticoreClient;
-use FS\SolrBundle\Doctrine\Mapper\EntityMapperInterface;
-use FS\SolrBundle\Doctrine\Mapper\MetaInformationInterface;
-use FS\SolrBundle\Helper\DocumentHelper;
-use FS\SolrBundle\Query\QueryBuilder;
-use FS\SolrBundle\Query\QueryBuilderInterface;
-use FS\SolrBundle\Repository\RepositoryInterface;
-use Solarium\Plugin\BufferedAdd\BufferedAdd;
-use Solarium\QueryType\Update\Query\Document\Document;
-use Solarium\QueryType\Select\Query\Query as SolariumQuery;
 use FS\SolrBundle\Doctrine\Mapper\EntityMapper;
+use FS\SolrBundle\Doctrine\Mapper\EntityMapperInterface;
 use FS\SolrBundle\Doctrine\Mapper\MetaInformationFactory;
+use FS\SolrBundle\Doctrine\Mapper\MetaInformationInterface;
 use FS\SolrBundle\Event\ErrorEvent;
 use FS\SolrBundle\Event\Event;
 use FS\SolrBundle\Event\Events;
+use FS\SolrBundle\Helper\DocumentHelper;
 use FS\SolrBundle\Query\AbstractQuery;
+use FS\SolrBundle\Query\QueryBuilder;
+use FS\SolrBundle\Query\QueryBuilderInterface;
 use FS\SolrBundle\Query\SolrQuery;
 use FS\SolrBundle\Repository\Repository;
+use FS\SolrBundle\Repository\RepositoryInterface;
 use Solarium\Client;
+use Solarium\Plugin\BufferedAdd\BufferedAdd;
+use Solarium\QueryType\Select\Query\Query as SolariumQuery;
 use Solarium\QueryType\Update\Query\Document\DocumentInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 /**
- * Class allows to index doctrine entities
+ * Class allows to index doctrine entities.
  */
 class Solr implements SolrInterface
 {
@@ -67,8 +77,7 @@ class Solr implements SolrInterface
         EventDispatcherInterface $manager = null,
         MetaInformationFactory $metaInformationFactory,
         EntityMapperInterface $entityMapper
-    )
-    {
+    ) {
         $this->solrClientCore = $client;
         $this->eventManager = $manager;
         $this->metaInformationFactory = $metaInformationFactory;
@@ -181,7 +190,6 @@ class Solr implements SolrInterface
         $this->eventManager->dispatch(Events::PRE_DELETE, $event);
 
         if ($document = $this->entityMapper->toDocument($metaInformation)) {
-
             try {
                 $indexName = $metaInformation->getIndex();
 
@@ -229,29 +237,7 @@ class Solr implements SolrInterface
     }
 
     /**
-     * @param MetaInformationInterface $metaInformation
-     * @param object                   $entity
-     *
-     * @return boolean
-     *
-     * @throws SolrException if callback method not exists
-     */
-    private function addToIndex(MetaInformationInterface $metaInformation, $entity): bool
-    {
-        if (!$metaInformation->hasSynchronizationFilter()) {
-            return true;
-        }
-
-        $callback = $metaInformation->getSynchronizationCallback();
-        if (!method_exists($entity, $callback)) {
-            throw new SolrException(sprintf('unknown method %s in entity %s', $callback, get_class($entity)));
-        }
-
-        return $entity->$callback();
-    }
-
-    /**
-     * Get select query
+     * Get select query.
      *
      * @param AbstractQuery $query
      *
@@ -283,7 +269,7 @@ class Solr implements SolrInterface
 
             $this->numberOfFoundDocuments = $response->getNumFound();
 
-            $entities = array();
+            $entities = [];
             foreach ($response as $document) {
                 $entities[] = $this->entityMapper->toEntity($document, $entity);
             }
@@ -300,9 +286,9 @@ class Solr implements SolrInterface
     }
 
     /**
-     * Number of overall found documents for a given query
+     * Number of overall found documents for a given query.
      *
-     * @return integer
+     * @return int
      */
     public function getNumFound(): int
     {
@@ -310,7 +296,7 @@ class Solr implements SolrInterface
     }
 
     /**
-     * clears the whole index by using the query *:*
+     * clears the whole index by using the query *:*.
      *
      * @throws SolrException if an error occurs
      */
@@ -342,7 +328,7 @@ class Solr implements SolrInterface
         $buffer = $this->solrClientCore->getPlugin('bufferedadd');
         $buffer->setBufferSize(500);
 
-        $allDocuments = array();
+        $allDocuments = [];
         foreach ($entities as $entity) {
             $metaInformations = $this->metaInformationFactory->loadInformation($entity);
 
@@ -358,7 +344,7 @@ class Solr implements SolrInterface
         foreach ($allDocuments as $core => $documents) {
             $buffer->addDocuments($documents);
 
-            if ($core == '') {
+            if ('' === $core) {
                 $core = null;
             }
             $buffer->setEndpoint($core);
@@ -392,6 +378,28 @@ class Solr implements SolrInterface
 
     /**
      * @param MetaInformationInterface $metaInformation
+     * @param object                   $entity
+     *
+     * @throws SolrException if callback method not exists
+     *
+     * @return bool
+     */
+    private function addToIndex(MetaInformationInterface $metaInformation, $entity): bool
+    {
+        if (!$metaInformation->hasSynchronizationFilter()) {
+            return true;
+        }
+
+        $callback = $metaInformation->getSynchronizationCallback();
+        if (!method_exists($entity, $callback)) {
+            throw new SolrException(sprintf('unknown method %s in entity %s', $callback, get_class($entity)));
+        }
+
+        return $entity->$callback();
+    }
+
+    /**
+     * @param MetaInformationInterface $metaInformation
      *
      * @return DocumentInterface
      */
@@ -416,7 +424,6 @@ class Solr implements SolrInterface
 
             $client = new SolariumMulticoreClient($this->solrClientCore);
             $client->update($doc, $indexName);
-
         } catch (\Exception $e) {
             $errorEvent = new ErrorEvent(null, $metaInformation, json_encode($this->solrClientCore->getOptions()), $event);
             $errorEvent->setException($e);

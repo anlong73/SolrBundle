@@ -1,5 +1,16 @@
 <?php
 
+/*
+ * Solr Bundle
+ * This is a fork of the unmaintained solr bundle from Florian Semm.
+ *
+ * @author Daan Biesterbos     (fork maintainer)
+ * @author Florian Semm (author original bundle)
+ *
+ * Issues can be submitted here:
+ * https://github.com/daanbiesterbos/SolrBundle/issues
+ */
+
 namespace FS\SolrBundle\Tests;
 
 use FS\SolrBundle\Doctrine\Annotation\AnnotationReader;
@@ -55,7 +66,7 @@ abstract class AbstractSolrTest extends TestCase
         $this->solrClientFake
             ->expects($this->once())
             ->method('createUpdate')
-            ->will($this->returnValue($updateQuery));
+            ->willReturn($updateQuery);
 
         $this->solrClientFake
             ->expects($this->once())
@@ -92,7 +103,7 @@ abstract class AbstractSolrTest extends TestCase
         $this->solrClientFake
             ->expects($this->once())
             ->method('createUpdate')
-            ->will($this->returnValue($deleteQuery));
+            ->willReturn($deleteQuery);
 
         $this->solrClientFake
             ->expects($this->once())
@@ -108,10 +119,10 @@ abstract class AbstractSolrTest extends TestCase
 
         $this->metaFactory->expects($this->once())
             ->method('loadInformation')
-            ->will($this->returnValue($metaInformation));
+            ->willReturn($metaInformation);
     }
 
-    protected function assertQueryWasExecuted($data = [], $index)
+    protected function assertQueryWasExecuted($data, $index)
     {
         $selectQuery = $this->createMock(SelectQuery::class);
         $selectQuery->expects($this->once())
@@ -122,18 +133,18 @@ abstract class AbstractSolrTest extends TestCase
         $this->solrClientFake
             ->expects($this->once())
             ->method('createSelect')
-            ->will($this->returnValue($selectQuery));
+            ->willReturn($selectQuery);
 
         $this->solrClientFake
             ->expects($this->once())
             ->method('select')
-            ->will($this->returnValue($queryResult));
+            ->willReturn($queryResult);
     }
 
     protected function mapOneDocument()
     {
         $this->mapper->expects($this->once())
             ->method('toDocument')
-            ->will($this->returnValue($this->createMock(DocumentInterface::class)));
+            ->willReturn($this->createMock(DocumentInterface::class));
     }
 }

@@ -1,5 +1,16 @@
 <?php
 
+/*
+ * Solr Bundle
+ * This is a fork of the unmaintained solr bundle from Florian Semm.
+ *
+ * @author Daan Biesterbos     (fork maintainer)
+ * @author Florian Semm (author original bundle)
+ *
+ * Issues can be submitted here:
+ * https://github.com/daanbiesterbos/SolrBundle/issues
+ */
+
 namespace FS\SolrBundle\Tests\Doctrine\Mapper;
 
 use FS\SolrBundle\Doctrine\Annotation\AnnotationReader;
@@ -9,6 +20,7 @@ use FS\SolrBundle\Doctrine\ClassnameResolver\ClassnameResolverException;
 use FS\SolrBundle\Doctrine\Mapper\MetaInformation;
 use FS\SolrBundle\Doctrine\Mapper\MetaInformationFactory;
 use FS\SolrBundle\Doctrine\Mapper\MetaInformationInterface;
+use FS\SolrBundle\Doctrine\Mapper\SolrMappingException;
 use FS\SolrBundle\Tests\Fixtures\EntityNestedProperty;
 use FS\SolrBundle\Tests\Fixtures\NestedEntity;
 use FS\SolrBundle\Tests\Fixtures\NotIndexedEntity;
@@ -24,31 +36,6 @@ class MetaInformationFactoryTest extends \PHPUnit\Framework\TestCase
      * @var AnnotationReader
      */
     private $reader;
-
-    protected function setUp(): void
-    {
-        $this->reader = new AnnotationReader(new \Doctrine\Common\Annotations\AnnotationReader());
-    }
-
-    private function getClassnameResolver($namespace)
-    {
-        $doctrineConfiguration = $this->createMock(ClassnameResolver::class);
-        $doctrineConfiguration->expects($this->any())
-            ->method('resolveFullQualifiedClassname')
-            ->will($this->returnValue($namespace));
-
-        return $doctrineConfiguration;
-    }
-
-    private function getClassnameResolverCouldNotResolveClassname()
-    {
-        $doctrineConfiguration = $this->createMock(ClassnameResolver::class);
-        $doctrineConfiguration->expects($this->any())
-            ->method('resolveFullQualifiedClassname')
-            ->will($this->throwException(new ClassnameResolverException('could not resolve classname for entity')));
-
-        return $doctrineConfiguration;
-    }
 
     public function testLoadInformation_ShouldLoadAll()
     {
@@ -95,11 +82,12 @@ class MetaInformationFactoryTest extends \PHPUnit\Framework\TestCase
     }
 
     /**
-     * @expectedException \FS\SolrBundle\Doctrine\Mapper\SolrMappingException
-     * @expectedExceptionMessage no declaration for document found in entity
+     * @test
      */
     public function testLoadInformation_EntityHasNoDocumentDeclaration_ShouldThrowException()
     {
+        $this->expectException(SolrMappingException::class);
+        $this->expectExceptionMessage('no declaration for document found in entity');
         $doctrineConfiguration = $this->getClassnameResolver(NotIndexedEntity::class);
 
         $factory = new MetaInformationFactory($this->reader);
@@ -108,13 +96,13 @@ class MetaInformationFactoryTest extends \PHPUnit\Framework\TestCase
     }
 
     /**
-     * @expectedException \FS\SolrBundle\Doctrine\ClassnameResolver\ClassnameResolverException
-     * @expectedExceptionMessage could not resolve classname for entity
+     * @test
      */
-    public function testLoadInformation_EntityDoesNoExists()
+    public function shouldNotLoadInformationForNonExistingEntity(): void
     {
+        $this->expectException(ClassnameResolverException::class);
+        $this->expectExceptionMessage('could not resolve classname for entity');
         $doctrineConfiguration = $this->getClassnameResolverCouldNotResolveClassname();
-
         $factory = new MetaInformationFactory($this->reader);
         $factory->setClassnameResolver($doctrineConfiguration);
         $factory->loadInformation('FSBlogBundle:UnknownEntity');
@@ -199,5 +187,30 @@ class MetaInformationFactoryTest extends \PHPUnit\Framework\TestCase
         $this->assertArrayNotHasKey('collection', $metainformation->getFieldMapping());
         $this->assertArrayHasKey('collection.id', $metainformation->getFieldMapping());
         $this->assertArrayHasKey('collection.name_t', $metainformation->getFieldMapping());
+    }
+
+    protected function setUp(): void
+    {
+        $this->reader = new AnnotationReader(new \Doctrine\Common\Annotations\AnnotationReader());
+    }
+
+    private function getClassnameResolver($namespace)
+    {
+        $doctrineConfiguration = $this->createMock(ClassnameResolver::class);
+        $doctrineConfiguration->expects($this->any())
+            ->method('resolveFullQualifiedClassname')
+            ->willReturn($namespace);
+
+        return $doctrineConfiguration;
+    }
+
+    private function getClassnameResolverCouldNotResolveClassname()
+    {
+        $doctrineConfiguration = $this->createMock(ClassnameResolver::class);
+        $doctrineConfiguration->expects($this->any())
+            ->method('resolveFullQualifiedClassname')
+            ->will($this->throwException(new ClassnameResolverException('could not resolve classname for entity')));
+
+        return $doctrineConfiguration;
     }
 }

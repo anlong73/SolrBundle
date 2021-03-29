@@ -1,11 +1,23 @@
 <?php
+
+/*
+ * Solr Bundle
+ * This is a fork of the unmaintained solr bundle from Florian Semm.
+ *
+ * @author Daan Biesterbos     (fork maintainer)
+ * @author Florian Semm (author original bundle)
+ *
+ * Issues can be submitted here:
+ * https://github.com/daanbiesterbos/SolrBundle/issues
+ */
+
 namespace FS\SolrBundle\Doctrine\Mapper;
 
 use FS\SolrBundle\Doctrine\Annotation\AnnotationReader;
 use FS\SolrBundle\Doctrine\ClassnameResolver\ClassnameResolver;
 
 /**
- * instantiates a new MetaInformation object by a given entity
+ * instantiates a new MetaInformation object by a given entity.
  */
 class MetaInformationFactory
 {
@@ -38,9 +50,9 @@ class MetaInformationFactory
     /**
      * @param object|string $entity entity, entity-alias or classname
      *
-     * @return MetaInformation
-     *
      * @throws SolrMappingException if no declaration for document found in $entity
+     *
+     * @return MetaInformation
      */
     public function loadInformation($entity)
     {
@@ -77,7 +89,7 @@ class MetaInformationFactory
 
         $fields = $this->annotationReader->getFields($entity);
         foreach ($fields as $field) {
-            if (!$field->nestedClass) {
+            if (empty($field->nestedClass)) {
                 continue;
             }
 
@@ -86,7 +98,7 @@ class MetaInformationFactory
             $subentityMapping = [];
             $nestedFieldName = $field->name;
             foreach ($nestedObjectMetainformation->getFieldMapping() as $documentName => $fieldName) {
-                $subentityMapping[$nestedFieldName . '.' . $documentName] = $nestedFieldName . '.' . $fieldName;
+                $subentityMapping[$nestedFieldName.'.'.$documentName] = $nestedFieldName.'.'.$fieldName;
             }
 
             $rootEntityMapping = $metaInformation->getFieldMapping();
@@ -119,7 +131,7 @@ class MetaInformationFactory
      */
     private function getDoctrineMapperType($entity)
     {
-        if ($this->isDoctrineEntity($entity) == false) {
+        if (false === $this->isDoctrineEntity($entity)) {
             return '';
         }
 
@@ -135,9 +147,9 @@ class MetaInformationFactory
     /**
      * @param object $entity
      *
-     * @return string
-     *
      * @throws \RuntimeException
+     *
+     * @return string
      */
     private function getClass($entity)
     {
@@ -161,8 +173,8 @@ class MetaInformationFactory
      */
     private function getDocumentName($fullClassName)
     {
-        $className = substr($fullClassName, (strrpos($fullClassName, '\\') + 1));
+        $className = mb_substr($fullClassName, (mb_strrpos($fullClassName, '\\') + 1));
 
-        return strtolower($className);
+        return mb_strtolower($className);
     }
 }

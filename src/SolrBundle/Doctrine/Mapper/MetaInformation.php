@@ -1,15 +1,26 @@
 <?php
+
+/*
+ * Solr Bundle
+ * This is a fork of the unmaintained solr bundle from Florian Semm.
+ *
+ * @author Daan Biesterbos     (fork maintainer)
+ * @author Florian Semm (author original bundle)
+ *
+ * Issues can be submitted here:
+ * https://github.com/daanbiesterbos/SolrBundle/issues
+ */
+
 namespace FS\SolrBundle\Doctrine\Mapper;
 
 use FS\SolrBundle\Doctrine\Annotation\Field;
 use FS\SolrBundle\Doctrine\Annotation\Id;
 
 /**
- * Holds meta-information about an entity
+ * Holds meta-information about an entity.
  */
 class MetaInformation implements MetaInformationInterface
 {
-
     /**
      * @var Id
      */
@@ -28,12 +39,12 @@ class MetaInformation implements MetaInformationInterface
     /**
      * @var Field[]
      */
-    private $fields = array();
+    private $fields = [];
 
     /**
      * @var array
      */
-    private $fieldMapping = array();
+    private $fieldMapping = [];
 
     /**
      * @var string
@@ -85,7 +96,7 @@ class MetaInformation implements MetaInformationInterface
      */
     public function getEntityId()
     {
-        if ($this->entity !== null && $this->entity->getId()) {
+        if (null !== $this->entity && $this->entity->getId()) {
             return $this->entity->getId();
         }
 
@@ -183,15 +194,15 @@ class MetaInformation implements MetaInformationInterface
     /**
      * @param string $fieldName
      *
-     * @return boolean
+     * @return bool
      */
     public function hasField($fieldName)
     {
-        $fields = array_filter($this->fields, function(Field $field) use ($fieldName) {
-            return $field->name == $fieldName || $field->getNameWithAlias() == $fieldName;
+        $fields = array_filter($this->fields, function (Field $field) use ($fieldName) {
+            return $field->name === $fieldName || $field->getNameWithAlias() === $fieldName;
         });
 
-        if (count($fields) == 0) {
+        if (0 === count($fields)) {
             return false;
         }
 
@@ -206,7 +217,7 @@ class MetaInformation implements MetaInformationInterface
      */
     public function setFieldValue($fieldName, $value)
     {
-        if ($this->hasField($fieldName) == false) {
+        if (false === $this->hasField($fieldName)) {
             throw new SolrMappingException(sprintf('Field %s does not exist', $fieldName));
         }
 
@@ -219,7 +230,7 @@ class MetaInformation implements MetaInformationInterface
      */
     public function getField($fieldName)
     {
-        if ($fieldName == '') {
+        if ('' === $fieldName) {
             throw new SolrMappingException('$fieldName must not be empty');
         }
 
@@ -227,8 +238,8 @@ class MetaInformation implements MetaInformationInterface
             return null;
         }
 
-        $fields = array_filter($this->fields, function(Field $field) use ($fieldName) {
-            return $field->name == $fieldName || $field->getNameWithAlias() == $fieldName;
+        $fields = array_filter($this->fields, function (Field $field) use ($fieldName) {
+            return $field->name === $fieldName || $field->getNameWithAlias() === $fieldName;
         });
 
         return array_pop($fields);
@@ -283,11 +294,11 @@ class MetaInformation implements MetaInformationInterface
     }
 
     /**
-     * @return boolean
+     * @return bool
      */
     public function hasSynchronizationFilter()
     {
-        if ($this->synchronizationCallback == '') {
+        if ('' === $this->synchronizationCallback) {
             return false;
         }
 
@@ -331,11 +342,11 @@ class MetaInformation implements MetaInformationInterface
      */
     public function getDocumentKey()
     {
-        return $this->documentName . '_' . $this->getEntityId();
+        return $this->documentName.'_'.$this->getEntityId();
     }
 
     /**
-     * @return boolean
+     * @return bool
      */
     public function isDoctrineEntity()
     {
@@ -343,7 +354,7 @@ class MetaInformation implements MetaInformationInterface
     }
 
     /**
-     * @param boolean $isDoctrineEntity
+     * @param bool $isDoctrineEntity
      */
     public function setIsDoctrineEntity($isDoctrineEntity)
     {
@@ -379,7 +390,7 @@ class MetaInformation implements MetaInformationInterface
      */
     public function generateDocumentId()
     {
-        if ($this->identifier == null) {
+        if (null === $this->identifier) {
             throw new SolrMappingException('No identifier is set');
         }
 

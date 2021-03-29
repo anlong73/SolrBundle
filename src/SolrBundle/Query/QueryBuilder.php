@@ -1,5 +1,16 @@
 <?php
 
+/*
+ * Solr Bundle
+ * This is a fork of the unmaintained solr bundle from Florian Semm.
+ *
+ * @author Daan Biesterbos     (fork maintainer)
+ * @author Florian Semm (author original bundle)
+ *
+ * Issues can be submitted here:
+ * https://github.com/daanbiesterbos/SolrBundle/issues
+ */
+
 namespace FS\SolrBundle\Query;
 
 use FS\SolrBundle\Doctrine\Mapper\MetaInformation;
@@ -41,7 +52,7 @@ class QueryBuilder implements QueryBuilderInterface
     public function where($field)
     {
         $solrField = $this->metaInformation->getField($field);
-        if ($solrField === null) {
+        if (null === $solrField) {
             throw new UnknownFieldException(sprintf('Field %s does not exists', $field));
         }
 
@@ -64,7 +75,7 @@ class QueryBuilder implements QueryBuilderInterface
         }
 
         $solrField = $this->metaInformation->getField($field);
-        if ($solrField === null) {
+        if (null === $solrField) {
             throw new UnknownFieldException(sprintf('Field %s does not exists', $field));
         }
 
@@ -87,7 +98,7 @@ class QueryBuilder implements QueryBuilderInterface
         }
 
         $solrField = $this->metaInformation->getField($field);
-        if ($solrField === null) {
+        if (null === $solrField) {
             throw new UnknownFieldException(sprintf('Field %s does not exists', $field));
         }
 
@@ -257,7 +268,7 @@ class QueryBuilder implements QueryBuilderInterface
 
         return $this;
     }
-    
+
     /**
      * {@inheritdoc}
      */
@@ -274,9 +285,10 @@ class QueryBuilder implements QueryBuilderInterface
     public function greaterThan($value)
     {
         $this->criteria = $this->criteria->greaterThan($value);
+
         return $this;
     }
-    
+
     /**
      * {@inheritdoc}
      */
@@ -293,9 +305,10 @@ class QueryBuilder implements QueryBuilderInterface
     public function lessThan($value)
     {
         $this->criteria = $this->criteria->lessThan($value);
+
         return $this;
     }
-    
+
     /**
      * {@inheritdoc}
      */

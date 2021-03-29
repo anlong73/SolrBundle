@@ -1,8 +1,20 @@
 <?php
 
+/*
+ * Solr Bundle
+ * This is a fork of the unmaintained solr bundle from Florian Semm.
+ *
+ * @author Daan Biesterbos     (fork maintainer)
+ * @author Florian Semm (author original bundle)
+ *
+ * Issues can be submitted here:
+ * https://github.com/daanbiesterbos/SolrBundle/issues
+ */
+
 namespace FS\SolrBundle\Tests\Solr\Doctrine;
 
 use FS\SolrBundle\Doctrine\ClassnameResolver\ClassnameResolver;
+use FS\SolrBundle\Doctrine\ClassnameResolver\ClassnameResolverException;
 use FS\SolrBundle\Doctrine\ClassnameResolver\KnownNamespaceAliases;
 use FS\SolrBundle\Tests\Fixtures\ValidTestEntity;
 use PHPUnit\Framework\TestCase;
@@ -17,11 +29,6 @@ class ClassnameResolverTest extends TestCase
 
     private $knownAliases;
 
-    protected function setUp(): void
-    {
-        $this->knownAliases = $this->createMock(KnownNamespaceAliases::class);
-    }
-
     /**
      * @test
      */
@@ -34,10 +41,10 @@ class ClassnameResolverTest extends TestCase
 
     /**
      * @test
-     * @expectedException \FS\SolrBundle\Doctrine\ClassnameResolver\ClassnameResolverException
      */
     public function cantResolveClassnameFromUnknowClassWithValidNamespace()
     {
+        $this->expectException(ClassnameResolverException::class);
         $resolver = $this->getResolverWithOrmAndOdmConfigBothHasEntity(self::ENTITY_NAMESPACE);
 
         $resolver->resolveFullQualifiedClassname('FSTest:UnknownEntity');
@@ -45,13 +52,18 @@ class ClassnameResolverTest extends TestCase
 
     /**
      * @test
-     * @expectedException \FS\SolrBundle\Doctrine\ClassnameResolver\ClassnameResolverException
      */
     public function cantResolveClassnameIfEntityNamespaceIsUnknown()
     {
+        $this->expectException(ClassnameResolverException::class);
         $resolver = $this->getResolverWithOrmConfigPassedInvalidNamespace(self::UNKNOW_ENTITY_NAMESPACE);
 
         $resolver->resolveFullQualifiedClassname('FStest:entity');
+    }
+
+    protected function setUp(): void
+    {
+        $this->knownAliases = $this->createMock(KnownNamespaceAliases::class);
     }
 
     /**
@@ -65,11 +77,11 @@ class ClassnameResolverTest extends TestCase
     {
         $this->knownAliases->expects($this->once())
             ->method('isKnownNamespaceAlias')
-            ->will($this->returnValue(true));
+            ->willReturn(true);
 
         $this->knownAliases->expects($this->once())
             ->method('getFullyQualifiedNamespace')
-            ->will($this->returnValue($knownNamespace));
+            ->willReturn($knownNamespace);
 
         $resolver = new ClassnameResolver($this->knownAliases);
 
@@ -80,11 +92,11 @@ class ClassnameResolverTest extends TestCase
     {
         $this->knownAliases->expects($this->once())
             ->method('isKnownNamespaceAlias')
-            ->will($this->returnValue(false));
+            ->willReturn(false);
 
         $this->knownAliases->expects($this->once())
             ->method('getAllNamespaceAliases')
-            ->will($this->returnValue(['FSTest']));
+            ->willReturn(['FSTest']);
 
         $resolver = new ClassnameResolver($this->knownAliases);
 
@@ -95,11 +107,11 @@ class ClassnameResolverTest extends TestCase
     {
         $this->knownAliases->expects($this->once())
             ->method('isKnownNamespaceAlias')
-            ->will($this->returnValue(true));
+            ->willReturn(true);
 
         $this->knownAliases->expects($this->once())
             ->method('getFullyQualifiedNamespace')
-            ->will($this->returnValue($knownNamespace));
+            ->willReturn($knownNamespace);
 
         $resolver = new ClassnameResolver($this->knownAliases);
 

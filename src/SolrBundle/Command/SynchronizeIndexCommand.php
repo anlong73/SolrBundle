@@ -1,10 +1,21 @@
 <?php
 
+/*
+ * Solr Bundle
+ * This is a fork of the unmaintained solr bundle from Florian Semm.
+ *
+ * @author Daan Biesterbos     (fork maintainer)
+ * @author Florian Semm (author original bundle)
+ *
+ * Issues can be submitted here:
+ * https://github.com/daanbiesterbos/SolrBundle/issues
+ */
+
 namespace FS\SolrBundle\Command;
 
-use Doctrine\Common\Persistence\ObjectManager;
 use Doctrine\ODM\MongoDB\DocumentRepository;
 use Doctrine\ORM\EntityRepository;
+use Doctrine\Persistence\ObjectManager;
 use FS\SolrBundle\Doctrine\Mapper\SolrMappingException;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputArgument;
@@ -14,7 +25,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Question\ConfirmationQuestion;
 
 /**
- * Command synchronizes the DB with solr
+ * Command synchronizes the DB with solr.
  */
 class SynchronizeIndexCommand extends ContainerAwareCommand
 {
@@ -38,7 +49,7 @@ class SynchronizeIndexCommand extends ContainerAwareCommand
     {
         $entities = $this->getIndexableEntities($input->getArgument('entity'));
         $source = $input->getOption('source');
-        if ($source !== null) {
+        if (null !== $source) {
             $output->writeln('<comment>The source option is deprecated and will be removed in version 2.0</comment>');
         }
 
@@ -78,7 +89,7 @@ class SynchronizeIndexCommand extends ContainerAwareCommand
                 }
             }
 
-            if ($totalSize === 0) {
+            if (0 === $totalSize) {
                 $output->writeln('<comment>No entities found for indexing</comment>');
 
                 continue;
@@ -88,11 +99,11 @@ class SynchronizeIndexCommand extends ContainerAwareCommand
 
             $batchLoops = ceil($totalSize / $batchSize);
 
-            for ($i = 0; $i <= $batchLoops; $i++) {
+            for ($i = 0; $i <= $batchLoops; ++$i) {
                 $offset = $i * $batchSize;
-                if ($startOffset && $i == 0) {
+                if ($startOffset && 0 === $i) {
                     $offset = $startOffset;
-                    $i++;
+                    ++$i;
                 }
 
                 $entities = $repository->findBy([], null, $batchSize, $offset);
@@ -132,9 +143,9 @@ class SynchronizeIndexCommand extends ContainerAwareCommand
     }
 
     /**
-     * Get a list of entities which are indexable by Solr
+     * Get a list of entities which are indexable by Solr.
      *
-     * @param null|string $entity
+     * @param string|null $entity
      *
      * @return array
      */
@@ -165,14 +176,14 @@ class SynchronizeIndexCommand extends ContainerAwareCommand
     }
 
     /**
-     * Get the total number of entities in a repository
+     * Get the total number of entities in a repository.
      *
      * @param string $entity
      * @param int    $startOffset
      *
-     * @return int
-     *
      * @throws \Exception if no primary key was found for the given entity
+     *
+     * @return int
      */
     private function getTotalNumberOfEntities($entity, $startOffset)
     {

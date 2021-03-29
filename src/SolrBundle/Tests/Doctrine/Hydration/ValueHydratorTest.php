@@ -1,5 +1,16 @@
 <?php
 
+/*
+ * Solr Bundle
+ * This is a fork of the unmaintained solr bundle from Florian Semm.
+ *
+ * @author Daan Biesterbos     (fork maintainer)
+ * @author Florian Semm (author original bundle)
+ *
+ * Issues can be submitted here:
+ * https://github.com/daanbiesterbos/SolrBundle/issues
+ */
+
 namespace FS\SolrBundle\Tests\Doctrine\Hydration;
 
 use FS\SolrBundle\Doctrine\Annotation\AnnotationReader;
@@ -19,11 +30,6 @@ class ValueHydratorTest extends \PHPUnit\Framework\TestCase
      * @var AnnotationReader
      */
     private $reader;
-
-    protected function setUp(): void
-    {
-        $this->reader = new AnnotationReader(new \Doctrine\Common\Annotations\AnnotationReader());
-    }
 
     /**
      * @test
@@ -129,5 +135,10 @@ class ValueHydratorTest extends \PHPUnit\Framework\TestCase
         $this->assertEquals('foo', $entity->getTitle());
 
         $this->assertTrue($hydratedDocument->getRelation() === $entity1);
+    }
+
+    protected function setUp(): void
+    {
+        $this->reader = new AnnotationReader(new \Doctrine\Common\Annotations\AnnotationReader());
     }
 }

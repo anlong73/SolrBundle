@@ -1,10 +1,20 @@
 <?php
 
+/*
+ * Solr Bundle
+ * This is a fork of the unmaintained solr bundle from Florian Semm.
+ *
+ * @author Daan Biesterbos     (fork maintainer)
+ * @author Florian Semm (author original bundle)
+ *
+ * Issues can be submitted here:
+ * https://github.com/daanbiesterbos/SolrBundle/issues
+ */
+
 namespace FS\SolrBundle\Doctrine\Hydration;
 
-use Doctrine\Common\Persistence\ManagerRegistry;
+use Doctrine\Persistence\ManagerRegistry;
 use FS\SolrBundle\Doctrine\Mapper\MetaInformationInterface;
-use Symfony\Bridge\Doctrine\RegistryInterface;
 
 /**
  * A doctrine-hydrator finds the entity for a given solr-document. This entity is updated with the solr-document values.
@@ -13,7 +23,6 @@ use Symfony\Bridge\Doctrine\RegistryInterface;
  */
 class DoctrineHydrator implements HydratorInterface
 {
-
     /**
      * @var ManagerRegistry
      */
@@ -61,19 +70,19 @@ class DoctrineHydrator implements HydratorInterface
         $entityId = $this->valueHydrator->removePrefixedKeyValues($document['id']);
 
         $doctrineEntity = null;
-        if ($metaInformation->getDoctrineMapperType() == MetaInformationInterface::DOCTRINE_MAPPER_TYPE_RELATIONAL) {
+        if (MetaInformationInterface::DOCTRINE_MAPPER_TYPE_RELATIONAL === $metaInformation->getDoctrineMapperType()) {
             $doctrineEntity = $this->ormManager
                 ->getManager()
                 ->getRepository($metaInformation->getClassName())
                 ->find($entityId);
-        } elseif ($metaInformation->getDoctrineMapperType() == MetaInformationInterface::DOCTRINE_MAPPER_TYPE_DOCUMENT) {
+        } elseif (MetaInformationInterface::DOCTRINE_MAPPER_TYPE_DOCUMENT === $metaInformation->getDoctrineMapperType()) {
             $doctrineEntity = $this->odmManager
                 ->getManager()
                 ->getRepository($metaInformation->getClassName())
                 ->find($entityId);
         }
 
-        if ($doctrineEntity !== null) {
+        if (null !== $doctrineEntity) {
             $metaInformation->setEntity($doctrineEntity);
         }
 

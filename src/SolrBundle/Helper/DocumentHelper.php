@@ -1,5 +1,16 @@
 <?php
 
+/*
+ * Solr Bundle
+ * This is a fork of the unmaintained solr bundle from Florian Semm.
+ *
+ * @author Daan Biesterbos     (fork maintainer)
+ * @author Florian Semm (author original bundle)
+ *
+ * Issues can be submitted here:
+ * https://github.com/daanbiesterbos/SolrBundle/issues
+ */
+
 namespace FS\SolrBundle\Helper;
 
 use FS\SolrBundle\Doctrine\Mapper\MetaInformationFactory;
@@ -41,19 +52,19 @@ class DocumentHelper
         $select = $this->solariumClient->createQuery(SolariumClient::QUERY_SELECT);
         $select->setQuery(sprintf('id:%s*', $metaInformation->getDocumentKey()));
         $select->setRows($this->getNumberOfDocuments($metaInformation->getDocumentName()));
-        $select->addFields(array('id'));
+        $select->addFields(['id']);
 
         $result = $this->solariumClient->select($select);
 
-        if ($result->count() == 0) {
+        if (0 === $result->count()) {
             return 0;
         }
 
         $ids = array_map(function ($document) {
-            return substr($document->id, stripos($document->id, '_') + 1);
+            return mb_substr($document->id, mb_stripos($document->id, '_') + 1);
         }, $result->getIterator()->getArrayCopy());
 
-        return intval(max($ids));
+        return (int) (max($ids));
     }
 
     /**

@@ -1,8 +1,18 @@
 <?php
 
+/*
+ * Solr Bundle
+ * This is a fork of the unmaintained solr bundle from Florian Semm.
+ *
+ * @author Daan Biesterbos     (fork maintainer)
+ * @author Florian Semm (author original bundle)
+ *
+ * Issues can be submitted here:
+ * https://github.com/daanbiesterbos/SolrBundle/issues
+ */
+
 namespace FS\SolrBundle\Doctrine\Hydration;
 
-use Doctrine\Common\Collections\Collection;
 use FS\SolrBundle\Doctrine\Annotation\Field;
 use FS\SolrBundle\Doctrine\Hydration\PropertyAccessor\MethodCallPropertyAccessor;
 use FS\SolrBundle\Doctrine\Hydration\PropertyAccessor\PrivatePropertyAccessor;
@@ -10,7 +20,7 @@ use FS\SolrBundle\Doctrine\Hydration\PropertyAccessor\PropertyAccessorInterface;
 use FS\SolrBundle\Doctrine\Mapper\MetaInformationInterface;
 
 /**
- * Maps all values of a given document on a target-entity
+ * Maps all values of a given document on a target-entity.
  */
 class ValueHydrator implements HydratorInterface
 {
@@ -25,20 +35,20 @@ class ValueHydrator implements HydratorInterface
     public function hydrate($document, MetaInformationInterface $metaInformation)
     {
         if (!isset($this->cache[$metaInformation->getDocumentName()])) {
-            $this->cache[$metaInformation->getDocumentName()] = array();
+            $this->cache[$metaInformation->getDocumentName()] = [];
         }
 
         $targetEntity = $metaInformation->getEntity();
 
         $reflectionClass = new \ReflectionClass($targetEntity);
         foreach ($document as $property => $value) {
-            if ($property === MetaInformationInterface::DOCUMENT_KEY_FIELD_NAME) {
+            if (MetaInformationInterface::DOCUMENT_KEY_FIELD_NAME === $property) {
                 $value = $this->removePrefixedKeyValues($value);
             }
 
             // skip field if value is array or "flat" object
             // hydrated object should contain a list of real entities / entity
-            if ($this->mapValue($property, $value, $metaInformation) == false) {
+            if (false === $this->mapValue($property, $value, $metaInformation)) {
                 continue;
             }
 
@@ -60,13 +70,12 @@ class ValueHydrator implements HydratorInterface
                 continue;
             }
 
-
             if ($reflectionClass->hasProperty($this->removeFieldSuffix($property))) {
                 $classProperty = $reflectionClass->getProperty($this->removeFieldSuffix($property));
             } else {
                 // could no found document-field in underscore notation, transform them to camel-case notation
                 $camelCasePropertyName = $this->toCamelCase($this->removeFieldSuffix($property));
-                if ($reflectionClass->hasProperty($camelCasePropertyName) == false) {
+                if (false === $reflectionClass->hasProperty($camelCasePropertyName)) {
                     continue;
                 }
 
@@ -83,7 +92,37 @@ class ValueHydrator implements HydratorInterface
     }
 
     /**
-     * returns the clean fieldname without type-suffix
+     * keyfield product_1 becomes 1.
+     *
+     * @param string $value
+     *
+     * @return string
+     */
+    public function removePrefixedKeyValues($value)
+    {
+        if (($pos = mb_strrpos($value, '_')) !== false) {
+            return mb_substr($value, ($pos + 1));
+        }
+
+        return $value;
+    }
+
+    /**
+     * Check if given field and value can be mapped.
+     *
+     * @param string                   $fieldName
+     * @param string                   $value
+     * @param MetaInformationInterface $metaInformation
+     *
+     * @return bool
+     */
+    public function mapValue($fieldName, $value, MetaInformationInterface $metaInformation)
+    {
+        return true;
+    }
+
+    /**
+     * returns the clean fieldname without type-suffix.
      *
      * eg: title_s => title
      *
@@ -93,31 +132,15 @@ class ValueHydrator implements HydratorInterface
      */
     protected function removeFieldSuffix($property)
     {
-        if (($pos = strrpos($property, '_')) !== false) {
-            return substr($property, 0, $pos);
+        if (($pos = mb_strrpos($property, '_')) !== false) {
+            return mb_substr($property, 0, $pos);
         }
 
         return $property;
     }
 
     /**
-     * keyfield product_1 becomes 1
-     *
-     * @param string $value
-     *
-     * @return string
-     */
-    public function removePrefixedKeyValues($value)
-    {
-        if (($pos = strrpos($value, '_')) !== false) {
-            return substr($value, ($pos + 1));
-        }
-
-        return $value;
-    }
-
-    /**
-     * returns field name camelcased if it has underlines
+     * returns field name camelcased if it has underlines.
      *
      * eg: user_id => userId
      *
@@ -133,18 +156,4 @@ class ValueHydrator implements HydratorInterface
 
         return lcfirst($pascalCased);
     }
-
-    /**
-     * Check if given field and value can be mapped
-     *
-     * @param string                   $fieldName
-     * @param string                   $value
-     * @param MetaInformationInterface $metaInformation
-     *
-     * @return bool
-     */
-    public function mapValue($fieldName, $value, MetaInformationInterface $metaInformation)
-    {
-        return true;
-    }
-} 
+}

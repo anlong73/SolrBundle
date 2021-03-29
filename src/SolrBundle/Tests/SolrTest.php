@@ -1,10 +1,22 @@
 <?php
 
+/*
+ * Solr Bundle
+ * This is a fork of the unmaintained solr bundle from Florian Semm.
+ *
+ * @author Daan Biesterbos     (fork maintainer)
+ * @author Florian Semm (author original bundle)
+ *
+ * Issues can be submitted here:
+ * https://github.com/daanbiesterbos/SolrBundle/issues
+ */
+
 namespace FS\SolrBundle\Tests;
 
 use FS\SolrBundle\Query\FindByDocumentNameQuery;
 use FS\SolrBundle\Query\QueryBuilderInterface;
 use FS\SolrBundle\Query\SolrQuery;
+use FS\SolrBundle\SolrException;
 use FS\SolrBundle\Tests\Doctrine\Mapper\SolrDocumentStub;
 use FS\SolrBundle\Tests\Fixtures\EntityCore0;
 use FS\SolrBundle\Tests\Fixtures\EntityCore1;
@@ -22,15 +34,20 @@ use Solarium\QueryType\Update\Query\Document\Document;
  */
 class SolrTest extends AbstractSolrTest
 {
-    public function testCreateQuery_ValidEntity()
+    /**
+     * @test
+     */
+    public function shouldCreateValidEntity(): void
     {
         $query = $this->solr->createQuery(ValidTestEntity::class);
-
         $this->assertTrue($query instanceof SolrQuery);
         $this->assertEquals(6, count($query->getMappedFields()));
     }
 
-    public function testGetRepository_UserdefinedRepository()
+    /**
+     * @test
+     */
+    public function shouldGetUserDefinedRepository(): void
     {
         $actual = $this->solr->getRepository(EntityWithRepository::class);
 
@@ -38,15 +55,19 @@ class SolrTest extends AbstractSolrTest
     }
 
     /**
-     * @expectedException \FS\SolrBundle\SolrException
-     * @expectedExceptionMessage FS\SolrBundle\Tests\Fixtures\InvalidEntityRepository must extends the FS\SolrBundle\Repository\Repository
+     * @test
      */
-    public function testGetRepository_UserdefinedInvalidRepository()
+    public function shouldNotGetInvalidUserDefinedRepository(): void
     {
+        $this->expectException(SolrException::class);
+        $this->expectExceptionMessage('FS\SolrBundle\Tests\Fixtures\InvalidEntityRepository must extends the FS\SolrBundle\Repository\Repository');
         $this->solr->getRepository(EntityWithInvalidRepository::class);
     }
 
-    public function testAddDocument()
+    /**
+     * @test
+     */
+    public function shouldAddDocument(): void
     {
         $this->assertUpdateQueryExecuted();
 
@@ -55,7 +76,7 @@ class SolrTest extends AbstractSolrTest
 
         $this->mapper->expects($this->once())
             ->method('toDocument')
-            ->will($this->returnValue(new DocumentStub()));
+            ->willReturn(new DocumentStub());
 
         $entity = new ValidTestEntity();
         $entity->setTitle('title');
@@ -63,7 +84,10 @@ class SolrTest extends AbstractSolrTest
         $this->solr->addDocument($entity);
     }
 
-    public function testUpdateDocument()
+    /**
+     * @test
+     */
+    public function shouldUpdateDocument(): void
     {
         $this->assertUpdateQueryExecuted();
 
@@ -72,7 +96,7 @@ class SolrTest extends AbstractSolrTest
 
         $this->mapper->expects($this->once())
             ->method('toDocument')
-            ->will($this->returnValue(new DocumentStub()));
+            ->willReturn(new DocumentStub());
 
         $entity = new ValidTestEntity();
         $entity->setTitle('title');
@@ -80,7 +104,10 @@ class SolrTest extends AbstractSolrTest
         $this->solr->updateDocument($entity);
     }
 
-    public function testDoNotUpdateDocumentIfDocumentCallbackAvoidIt()
+    /**
+     * @test
+     */
+    public function shouldNotUpdateDocumentIfDocumentCallbackAvoidIt(): void
     {
         $this->eventDispatcher->expects($this->never())
             ->method('dispatch');
@@ -93,7 +120,10 @@ class SolrTest extends AbstractSolrTest
         $this->solr->updateDocument($filteredEntity);
     }
 
-    public function testRemoveDocument()
+    /**
+     * @test
+     */
+    public function shouldRemoveDocument(): void
     {
         $this->assertDeleteQueryWasExecuted();
 
@@ -102,26 +132,32 @@ class SolrTest extends AbstractSolrTest
 
         $this->mapper->expects($this->once())
             ->method('toDocument')
-            ->will($this->returnValue(new DocumentStub()));
+            ->willReturn(new DocumentStub());
 
         $this->solr->removeDocument(new ValidTestEntity());
     }
 
-    public function testClearIndex()
+    /**
+     * @test
+     */
+    public function shouldClearIndex(): void
     {
         $this->eventDispatcher->expects($this->exactly(2))
             ->method('dispatch');
 
         $this->solrClientFake->expects($this->once())
             ->method('getEndpoints')
-            ->will($this->returnValue(['core0' => []]));
+            ->willReturn(['core0' => []]);
 
         $this->assertDeleteQueryWasExecuted();
 
         $this->solr->clearIndex();
     }
 
-    public function testQuery_NoResponseKeyInResponseSet()
+    /**
+     * @test
+     */
+    public function shouldHaveNoResponseKeyInResponseSet(): void
     {
         $document = new Document();
         $document->addField('document_name_s', 'name');
@@ -137,7 +173,10 @@ class SolrTest extends AbstractSolrTest
         $this->assertEquals(0, count($entities));
     }
 
-    public function testQuery_OneDocumentFound()
+    /**
+     * @test
+     */
+    public function shouldFindOneDocument(): void
     {
         $arrayObj = new SolrDocumentStub(['title_s' => 'title']);
 
@@ -156,7 +195,10 @@ class SolrTest extends AbstractSolrTest
         $this->assertEquals(1, count($entities));
     }
 
-    public function testAddEntity_ShouldNotIndexEntity()
+    /**
+     * @test
+     */
+    public function shouldNotIndexAddedEntity(): void
     {
         $this->assertUpdateQueryWasNotExecuted();
 
@@ -170,7 +212,10 @@ class SolrTest extends AbstractSolrTest
         $this->assertTrue($entity->getShouldBeIndexedWasCalled(), 'filter method was not called');
     }
 
-    public function testAddEntity_ShouldIndexEntity()
+    /**
+     * @test
+     */
+    public function shouldIndexAddedEntity(): void
     {
         $this->assertUpdateQueryExecuted('index0');
 
@@ -182,7 +227,7 @@ class SolrTest extends AbstractSolrTest
 
         $this->mapper->expects($this->once())
             ->method('toDocument')
-            ->will($this->returnValue(new DocumentStub()));
+            ->willReturn(new DocumentStub());
 
         $this->solr->addDocument($entity);
 
@@ -190,10 +235,11 @@ class SolrTest extends AbstractSolrTest
     }
 
     /**
-     * @expectedException \FS\SolrBundle\SolrException
+     * @test
      */
-    public function testAddEntity_FilteredEntityWithUnknownCallback()
+    public function addFilteredEntityWithUnknownCallback(): void
     {
+        $this->expectException(SolrException::class);
         $this->assertUpdateQueryWasNotExecuted();
 
         $this->eventDispatcher->expects($this->never())
@@ -205,7 +251,7 @@ class SolrTest extends AbstractSolrTest
     /**
      * @test
      */
-    public function indexDocumentsGroupedByCore()
+    public function indexDocumentsGroupedByCore(): void
     {
         $entity = new ValidTestEntity();
         $entity->setTitle('title field');
@@ -222,11 +268,11 @@ class SolrTest extends AbstractSolrTest
         $this->solrClientFake->expects($this->once())
             ->method('getPlugin')
             ->with('bufferedadd')
-            ->will($this->returnValue($bufferPlugin));
+            ->willReturn($bufferPlugin);
 
         $this->mapper->expects($this->once())
             ->method('toDocument')
-            ->will($this->returnValue(new DocumentStub()));
+            ->willReturn(new DocumentStub());
 
         $this->solr->synchronizeIndex([$entity]);
     }
@@ -234,7 +280,7 @@ class SolrTest extends AbstractSolrTest
     /**
      * @test
      */
-    public function setCoreToNullIfNoIndexExists()
+    public function setCoreToNullIfNoIndexExists(): void
     {
         $entity1 = new EntityCore0();
         $entity1->setText('a text');
@@ -243,14 +289,12 @@ class SolrTest extends AbstractSolrTest
         $entity2->setText('a text');
 
         $bufferPlugin = $this->createMock(BufferedAdd::class);
-
-        $bufferPlugin->expects($this->at(2))
+        $bufferPlugin->expects(self::exactly(2))
             ->method('setEndpoint')
-            ->with('core0');
-
-        $bufferPlugin->expects($this->at(5))
-            ->method('setEndpoint')
-            ->with('core1');
+            ->withConsecutive(
+                ['core0'],
+                ['core1']
+            );
 
         $bufferPlugin->expects($this->exactly(2))
             ->method('commit');
@@ -258,11 +302,11 @@ class SolrTest extends AbstractSolrTest
         $this->solrClientFake->expects($this->once())
             ->method('getPlugin')
             ->with('bufferedadd')
-            ->will($this->returnValue($bufferPlugin));
+            ->willReturn($bufferPlugin);
 
         $this->mapper->expects($this->exactly(2))
             ->method('toDocument')
-            ->will($this->returnValue(new DocumentStub()));
+            ->willReturn(new DocumentStub());
 
         $this->solr->synchronizeIndex([$entity1, $entity2]);
     }
@@ -270,7 +314,7 @@ class SolrTest extends AbstractSolrTest
     /**
      * @test
      */
-    public function createQueryBuilder()
+    public function createQueryBuilder(): void
     {
         $queryBuilder = $this->solr->createQueryBuilder(ValidTestEntity::class);
 

@@ -1,10 +1,22 @@
 <?php
 
+/*
+ * Solr Bundle
+ * This is a fork of the unmaintained solr bundle from Florian Semm.
+ *
+ * @author Daan Biesterbos     (fork maintainer)
+ * @author Florian Semm (author original bundle)
+ *
+ * Issues can be submitted here:
+ * https://github.com/daanbiesterbos/SolrBundle/issues
+ */
+
 namespace FS\SolrBundle\Tests\Doctrine\Mapping\Mapper;
 
 use FS\SolrBundle\Doctrine\Annotation\AnnotationReader;
 use FS\SolrBundle\Doctrine\Annotation as Solr;
 use FS\SolrBundle\Doctrine\Annotation\Field;
+use FS\SolrBundle\Doctrine\Mapper\SolrMappingException;
 use FS\SolrBundle\Tests\Fixtures\EntityWithRepository;
 use FS\SolrBundle\Tests\Fixtures\NotIndexedEntity;
 use FS\SolrBundle\Tests\Fixtures\ValidEntityRepository;
@@ -29,11 +41,6 @@ class AnnotationReaderTest extends \PHPUnit\Framework\TestCase
      */
     private $reader;
 
-    protected function setUp(): void
-    {
-        $this->reader = new AnnotationReader(new \Doctrine\Common\Annotations\AnnotationReader());
-    }
-
     public function testGetFields_NoFieldsDected()
     {
         $fields = $this->reader->getFields(new NotIndexedEntity());
@@ -51,24 +58,26 @@ class AnnotationReaderTest extends \PHPUnit\Framework\TestCase
     public function testGetFields_OneFieldsOneTypes()
     {
         $fields = $this->reader->getFields(new ValidTestEntityNoTypes());
-
         $this->assertEquals(1, count($fields), '1 fields are mapped');
-
         $field = $fields[0];
         $this->assertTrue($field instanceof Field);
         $this->assertEquals('title', $field->getNameWithAlias());
     }
 
     /**
-     * @expectedException \FS\SolrBundle\Doctrine\Annotation\AnnotationReaderException
-     * @expectedExceptionMessage no identifer declared in entity FS\SolrBundle\Tests\Fixtures\NotIndexedEntity
+     * @test
      */
-    public function testGetIdentifier_ShouldThrowException()
+    public function shouldFailToGetUndefinedIdentifier(): void
     {
+        $this->expectException(Solr\AnnotationReaderException::class);
+        $this->expectExceptionMessage('no identifer declared in entity FS\SolrBundle\Tests\Fixtures\NotIndexedEntity');
         $this->reader->getIdentifier(new NotIndexedEntity());
     }
 
-    public function testGetIdentifier()
+    /**
+     * @test
+     */
+    public function shouldGetIdentifier(): void
     {
         $id = $this->reader->getIdentifier(new ValidTestEntity());
 
@@ -76,23 +85,21 @@ class AnnotationReaderTest extends \PHPUnit\Framework\TestCase
         $this->assertFalse($id->generateId);
     }
 
-    public function testGetFieldMapping_ThreeMappingsAndId()
+    public function testGetFieldMapping_ThreeMappingsAndId(): void
     {
         $fields = $this->reader->getFieldMapping(new ValidTestEntity());
-
         $this->assertEquals(6, count($fields), 'six fields are mapped');
         $this->assertTrue(array_key_exists('title', $fields));
         $this->assertTrue(array_key_exists('id', $fields));
     }
 
-    public function testGetRepository_ValidRepositoryDeclared()
+    public function testGetRepository_ValidRepositoryDeclared(): void
     {
         $repositoryClassname = $this->reader->getRepository(new EntityWithRepository());
-
         $this->assertEquals(ValidEntityRepository::class, $repositoryClassname, 'wrong declared repository');
     }
 
-    public function testGetRepository_NoRepositoryAttributSet()
+    public function testGetRepository_NoRepositoryAttributSet(): void
     {
         $repository = $this->reader->getRepository(new ValidTestEntity());
 
@@ -101,7 +108,7 @@ class AnnotationReaderTest extends \PHPUnit\Framework\TestCase
         $this->assertEquals($expected, $actual, 'no repository was declared');
     }
 
-    public function testGetBoost()
+    public function testGetBoost(): void
     {
         $boost = $this->reader->getEntityBoost(new ValidTestEntity());
 
@@ -109,11 +116,12 @@ class AnnotationReaderTest extends \PHPUnit\Framework\TestCase
     }
 
     /**
-     * @expectedException \FS\SolrBundle\Doctrine\Annotation\AnnotationReaderException
-     * @expectedExceptionMessage Invalid boost value "aaaa" in class "FS\SolrBundle\Tests\Fixtures\ValidTestEntityWithInvalidBoost" configured
+     * @test
      */
-    public function testGetBoost_BoostNotNumeric()
+    public function shouldFailToGetNonNumericBoost(): void
     {
+        $this->expectException(Solr\AnnotationReaderException::class);
+        $this->expectExceptionMessage('Invalid boost value "aaaa" in class "FS\SolrBundle\Tests\Fixtures\ValidTestEntityWithInvalidBoost" configured');
         $this->reader->getEntityBoost(new ValidTestEntityWithInvalidBoost());
     }
 
@@ -128,7 +136,7 @@ class AnnotationReaderTest extends \PHPUnit\Framework\TestCase
     {
         $boost = $this->reader->getEntityBoost(new ValidTestEntityNoBoost());
 
-        $this->assertEquals(null, $boost);
+        $this->assertNull($boost);
     }
 
     public function testGetCallback_CallbackDefined()
@@ -260,11 +268,16 @@ class AnnotationReaderTest extends \PHPUnit\Framework\TestCase
 
     /**
      * @test
-     * @expectedException \FS\SolrBundle\Doctrine\Mapper\SolrMappingException
      */
-    public function methodWithAnnotationMustHaveAField()
+    public function methodWithAnnotationShouldHaveField(): void
     {
+        $this->expectException(SolrMappingException::class);
         $this->reader->getMethods(new EntityMissingNameProperty());
+    }
+
+    protected function setUp(): void
+    {
+        $this->reader = new AnnotationReader(new \Doctrine\Common\Annotations\AnnotationReader());
     }
 }
 

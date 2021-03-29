@@ -1,8 +1,8 @@
 SolrBundle
 ==========
-[![Build Status](https://secure.travis-ci.org/floriansemm/SolrBundle.png?branch=master)](http://travis-ci.org/floriansemm/SolrBundle) 
-[![Latest Stable Version](https://poser.pugx.org/floriansemm/solr-bundle/v/stable.svg)](https://packagist.org/packages/floriansemm/solr-bundle)
-[![Total Downloads](https://poser.pugx.org/floriansemm/solr-bundle/downloads.svg)](https://packagist.org/packages/floriansemm/solr-bundle)
+[![Build Status](https://github.com/daanbiesterbos/solr-bundle/actions/workflows/build/badge.svg)](https://github.com/daanbiesterbos/solr-bundle/actions/workflows/build/)
+[![Latest Stable Version](https://poser.pugx.org/daanbiesterbos/solr-bundle/v/stable.svg)](https://packagist.org/packages/daanbiesterbos/solr-bundle)
+[![Total Downloads](https://poser.pugx.org/daanbiesterbos/solr-bundle/downloads.svg)](https://packagist.org/packages/daanbiesterbos/solr-bundle)
 
 
 Introduction
@@ -14,29 +14,26 @@ This Bundle provides a simple API to index and query a Solr Index.
 
 ## Installation
 
-Installation is a quick (I promise!) 3 step process:
+Installation is a 3 step process:
 
 1. Download SolrBundle
 2. Enable the Bundle
 3. Configure the SolrBundle
-4. configure your entity
+4. Configure your entity
 
 ### Step 1: Download SolrBundle
 
 This bundle is available on Packagist. You can install it using Composer:
 
 ```bash
-$ composer require floriansemm/solr-bundle
+composer require daanbiesterbos/solr-bundle
 ```
 
 ### Step 2: Enable the bundle
 
 Next, enable the bundle in the kernel:
 
-``` php
-<?php
-// app/AppKernel.php
-
+```php
 public function registerBundles()
 {
     $bundles = array(

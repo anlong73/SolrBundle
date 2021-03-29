@@ -1,5 +1,16 @@
 <?php
 
+/*
+ * Solr Bundle
+ * This is a fork of the unmaintained solr bundle from Florian Semm.
+ *
+ * @author Daan Biesterbos     (fork maintainer)
+ * @author Florian Semm (author original bundle)
+ *
+ * Issues can be submitted here:
+ * https://github.com/daanbiesterbos/SolrBundle/issues
+ */
+
 namespace FS\SolrBundle\Client\Solarium\Plugin;
 
 use FS\SolrBundle\Logging\SolrLoggerInterface;
@@ -9,7 +20,7 @@ use Solarium\Core\Event\PreExecuteRequest;
 use Solarium\Core\Plugin\AbstractPlugin;
 
 /**
- * Registers a logger to collection data about request
+ * Registers a logger to collection data about request.
  */
 class LoggerPlugin extends AbstractPlugin
 {
@@ -27,16 +38,6 @@ class LoggerPlugin extends AbstractPlugin
     }
 
     /**
-     * {@inheritdoc}
-     */
-    protected function initPluginType()
-    {
-        $dispatcher = $this->client->getEventDispatcher();
-        $dispatcher->addListener(Events::PRE_EXECUTE_REQUEST,   [$this, 'preExecuteRequest']);
-        $dispatcher->addListener(Events::POST_EXECUTE_REQUEST,  [$this, 'postExecuteRequest']);
-    }
-
-    /**
      * @param PreExecuteRequest $event
      */
     public function preExecuteRequest(PreExecuteRequest $event)
@@ -50,14 +51,14 @@ class LoggerPlugin extends AbstractPlugin
         $requestInformation = [
             'uri' => $path,
             'method' => $request->getMethod(),
-            'raw_data' => $request->getRawData()
+            'raw_data' => $request->getRawData(),
         ];
 
         $this->logger->startRequest($requestInformation);
     }
 
     /**
-     * Issue stop logger
+     * Issue stop logger.
      */
     public function postExecuteRequest()
     {
@@ -70,5 +71,15 @@ class LoggerPlugin extends AbstractPlugin
     public function getClient()
     {
         return $this->client;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function initPluginType()
+    {
+        $dispatcher = $this->client->getEventDispatcher();
+        $dispatcher->addListener(Events::PRE_EXECUTE_REQUEST, [$this, 'preExecuteRequest']);
+        $dispatcher->addListener(Events::POST_EXECUTE_REQUEST, [$this, 'postExecuteRequest']);
     }
 }

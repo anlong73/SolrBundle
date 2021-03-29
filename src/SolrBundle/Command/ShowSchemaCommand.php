@@ -1,5 +1,16 @@
 <?php
 
+/*
+ * Solr Bundle
+ * This is a fork of the unmaintained solr bundle from Florian Semm.
+ *
+ * @author Daan Biesterbos     (fork maintainer)
+ * @author Florian Semm (author original bundle)
+ *
+ * Issues can be submitted here:
+ * https://github.com/daanbiesterbos/SolrBundle/issues
+ */
+
 namespace FS\SolrBundle\Command;
 
 use FS\SolrBundle\Doctrine\Mapper\MetaInformationInterface;
@@ -45,7 +56,7 @@ class ShowSchemaCommand extends ContainerAwareCommand
             }
             $output->writeln(sprintf('<comment>%s</comment> %s', $classname, $nested));
             $output->writeln(sprintf('Documentname: %s', $metaInformation->getDocumentName()));
-            $output->writeln(sprintf('Document Boost: %s', $metaInformation->getBoost()?$metaInformation->getBoost(): '-'));
+            $output->writeln(sprintf('Document Boost: %s', $metaInformation->getBoost() ? $metaInformation->getBoost() : '-'));
 
             $simpleFields = $this->getSimpleFields($metaInformation);
 
@@ -58,14 +69,14 @@ class ShowSchemaCommand extends ContainerAwareCommand
             $this->renderTable($output, $rows);
 
             $nestedFields = $this->getNestedFields($metaInformation);
-            if (count($nestedFields) == 0) {
+            if (0 === count($nestedFields)) {
                 return;
             }
 
             $output->writeln(sprintf('Fields <comment>(%s)</comment> with nested documents', count($nestedFields)));
 
             foreach ($nestedFields as $idField) {
-                $propertyName = substr($idField, 0, strpos($idField, '.'));
+                $propertyName = mb_substr($idField, 0, mb_strpos($idField, '.'));
 
                 if ($nestedField = $metaInformation->getField($propertyName)) {
                     $output->writeln(sprintf('Field <comment>%s</comment> contains nested class <comment>%s</comment>', $propertyName, $nestedField->nestedClass));
@@ -75,7 +86,7 @@ class ShowSchemaCommand extends ContainerAwareCommand
                     foreach ($nestedDocument->getFieldMapping() as $documentField => $property) {
                         $field = $nestedDocument->getField($documentField);
 
-                        if ($field === null) {
+                        if (null === $field) {
                             continue;
                         }
 
@@ -85,19 +96,35 @@ class ShowSchemaCommand extends ContainerAwareCommand
                     $this->renderTable($output, $rows);
                 }
             }
-
         }
+    }
 
+    /**
+     * @param MetaInformationInterface $metaInformation
+     *
+     * @return array
+     */
+    protected function getNestedFields(MetaInformationInterface $metaInformation)
+    {
+        $complexFields = array_filter($metaInformation->getFieldMapping(), function ($field) {
+            if (false !== mb_strpos($field, '.id')) {
+                return true;
+            }
+
+            return false;
+        });
+
+        return $complexFields;
     }
 
     /**
      * @param OutputInterface $output
-     * @param array $rows
+     * @param array           $rows
      */
     private function renderTable(OutputInterface $output, array $rows)
     {
         $table = new Table($output);
-        $table->setHeaders(array('Property', 'Document Fieldname', 'Boost'));
+        $table->setHeaders(['Property', 'Document Fieldname', 'Boost']);
         $table->setRows($rows);
 
         $table->render();
@@ -111,7 +138,7 @@ class ShowSchemaCommand extends ContainerAwareCommand
     private function getSimpleFields(MetaInformationInterface $metaInformation)
     {
         $simpleFields = array_filter($metaInformation->getFieldMapping(), function ($field) {
-            if (strpos($field, '.') === false) {
+            if (false === mb_strpos($field, '.')) {
                 return true;
             }
 
@@ -119,23 +146,5 @@ class ShowSchemaCommand extends ContainerAwareCommand
         });
 
         return $simpleFields;
-    }
-
-    /**
-     * @param MetaInformationInterface $metaInformation
-     *
-     * @return array
-     */
-    protected function getNestedFields(MetaInformationInterface $metaInformation)
-    {
-        $complexFields = array_filter($metaInformation->getFieldMapping(), function ($field) {
-            if (strpos($field, '.id') !== false) {
-                return true;
-            }
-
-            return false;
-        });
-
-        return $complexFields;
     }
 }

@@ -1,5 +1,16 @@
 <?php
 
+/*
+ * Solr Bundle
+ * This is a fork of the unmaintained solr bundle from Florian Semm.
+ *
+ * @author Daan Biesterbos     (fork maintainer)
+ * @author Florian Semm (author original bundle)
+ *
+ * Issues can be submitted here:
+ * https://github.com/daanbiesterbos/SolrBundle/issues
+ */
+
 namespace FS\SolrBundle\Tests\Solr\Repository;
 
 use FS\SolrBundle\Doctrine\Annotation\AnnotationReader;
@@ -27,15 +38,6 @@ class RepositoryTest extends \PHPUnit\Framework\TestCase
     private $metaInformationFactory;
 
     private $mapper;
-
-    protected function setUp(): void
-    {
-        $this->metaInformationFactory = new MetaInformationFactory($reader = new AnnotationReader(new \Doctrine\Common\Annotations\AnnotationReader()));
-        $this->mapper = $this->createMock(EntityMapperInterface::class);
-        $this->mapper->expects($this->once())
-            ->method('setHydrationMode')
-            ->with(HydrationModes::HYDRATE_DOCTRINE);
-    }
 
     public function testFind_DocumentIsKnown()
     {
@@ -156,5 +158,14 @@ class RepositoryTest extends \PHPUnit\Framework\TestCase
         ]);
 
         $this->assertEquals('{!parent which="id:entitynestedproperty_*"}name_t:*test*test*', $solr->query->getQuery());
+    }
+
+    protected function setUp(): void
+    {
+        $this->metaInformationFactory = new MetaInformationFactory($reader = new AnnotationReader(new \Doctrine\Common\Annotations\AnnotationReader()));
+        $this->mapper = $this->createMock(EntityMapperInterface::class);
+        $this->mapper->expects($this->once())
+            ->method('setHydrationMode')
+            ->with(HydrationModes::HYDRATE_DOCTRINE);
     }
 }

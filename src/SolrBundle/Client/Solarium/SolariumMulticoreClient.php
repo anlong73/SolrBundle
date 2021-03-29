@@ -1,16 +1,26 @@
 <?php
 
+/*
+ * Solr Bundle
+ * This is a fork of the unmaintained solr bundle from Florian Semm.
+ *
+ * @author Daan Biesterbos     (fork maintainer)
+ * @author Florian Semm (author original bundle)
+ *
+ * Issues can be submitted here:
+ * https://github.com/daanbiesterbos/SolrBundle/issues
+ */
+
 namespace FS\SolrBundle\Client\Solarium;
 
 use FS\SolrBundle\Doctrine\Mapper\MetaInformationInterface;
 use FS\SolrBundle\Query\DeleteDocumentQuery;
-use FS\SolrBundle\Query\FindByIdentifierQuery;
+use Solarium\Client;
 use Solarium\Core\Query\QueryInterface;
 use Solarium\QueryType\Update\Query\Document\DocumentInterface;
-use \Solarium\Client;
 
 /**
- * Wrapper class for \Solarium\Client to perform actions on multiple cores
+ * Wrapper class for \Solarium\Client to perform actions on multiple cores.
  */
 class SolariumMulticoreClient
 {
@@ -61,7 +71,7 @@ class SolariumMulticoreClient
     }
 
     /**
-     * Runs a *:* delete query on all cores
+     * Runs a *:* delete query on all cores.
      */
     public function clearCores()
     {
@@ -78,7 +88,7 @@ class SolariumMulticoreClient
      */
     private function applyQuery(QueryInterface $query, $index)
     {
-        if ($index == '*') {
+        if ('*' === $index) {
             $this->applyOnAllCores($query);
         } else {
             $this->solariumClient->update($query, $index);
@@ -94,4 +104,4 @@ class SolariumMulticoreClient
             $this->solariumClient->update($query, $endpointName);
         }
     }
-} 
+}

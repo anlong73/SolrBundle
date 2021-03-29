@@ -1,12 +1,22 @@
 <?php
 
+/*
+ * Solr Bundle
+ * This is a fork of the unmaintained solr bundle from Florian Semm.
+ *
+ * @author Daan Biesterbos     (fork maintainer)
+ * @author Florian Semm (author original bundle)
+ *
+ * Issues can be submitted here:
+ * https://github.com/daanbiesterbos/SolrBundle/issues
+ */
+
 namespace FS\SolrBundle\Query;
 
 use FS\SolrBundle\Query\Exception\UnknownFieldException;
 
 class SolrQuery extends AbstractQuery
 {
-
     /**
      * @var array
      */
@@ -109,7 +119,7 @@ class SolrQuery extends AbstractQuery
         $this->setUseAndOperator(false);
 
         foreach ($this->mappedFields as $documentField => $entityField) {
-            if ($documentField == $this->getMetaInformation()->getIdentifierFieldName()) {
+            if ($documentField === $this->getMetaInformation()->getIdentifierFieldName()) {
                 continue;
             }
 
@@ -118,13 +128,12 @@ class SolrQuery extends AbstractQuery
     }
 
     /**
-     *
      * @param string $field
      * @param string $value
      *
-     * @return SolrQuery
-     *
      * @throws UnknownFieldException if $field has not mapping / is unknown
+     *
+     * @return SolrQuery
      */
     public function addSearchTerm($field, $value)
     {
@@ -137,10 +146,10 @@ class SolrQuery extends AbstractQuery
         }
 
         $documentFieldName = $documentFieldsAsValues[$field];
-        if ($position = strpos($field, '.')) {
+        if ($position = mb_strpos($field, '.')) {
             $nestedFieldMapping = $documentFieldsAsValues[$field];
 
-            $nestedField = substr($nestedFieldMapping, $position + 1);
+            $nestedField = mb_substr($nestedFieldMapping, $position + 1);
 
             $documentName = $this->getMetaInformation()->getDocumentName();
             $documentFieldName = sprintf('{!parent which="id:%s_*"}%s', $documentName, $nestedField);
@@ -202,7 +211,7 @@ class SolrQuery extends AbstractQuery
 
         $term = '';
         // query all documents if no terms exists
-        if (count($searchTerms) == 0) {
+        if (0 === count($searchTerms)) {
             $query = '*:*';
             parent::setQuery($query);
 
@@ -216,27 +225,26 @@ class SolrQuery extends AbstractQuery
 
         $termCount = 1;
         foreach ($searchTerms as $fieldName => $fieldValue) {
+            if ('id' === $fieldName) {
+                $this->getFilterQuery('id')->setQuery('id:'.$fieldValue);
 
-            if ($fieldName == 'id') {
-                $this->getFilterQuery('id')->setQuery('id:' . $fieldValue);
-
-                $termCount++;
+                ++$termCount;
 
                 continue;
             }
 
             $fieldValue = $this->querifyFieldValue($fieldValue);
 
-            $term .= $fieldName . ':' . $fieldValue;
+            $term .= $fieldName.':'.$fieldValue;
 
             if ($termCount < count($searchTerms)) {
-                $term .= ' ' . $logicOperator . ' ';
+                $term .= ' '.$logicOperator.' ';
             }
 
-            $termCount++;
+            ++$termCount;
         }
 
-        if (strlen($term) == 0) {
+        if (0 === mb_strlen($term)) {
             $term = '*:*';
         }
 
@@ -246,7 +254,7 @@ class SolrQuery extends AbstractQuery
     }
 
     /**
-     * Transforms array to string representation and adds quotes
+     * Transforms array to string representation and adds quotes.
      *
      * @param string $fieldValue
      *
@@ -257,22 +265,22 @@ class SolrQuery extends AbstractQuery
         if (is_array($fieldValue) && count($fieldValue) > 1) {
             sort($fieldValue);
 
-            $quoted = array_map(function($value) {
-                return '"'. $value .'"';
+            $quoted = array_map(function ($value) {
+                return '"'.$value.'"';
             }, $fieldValue);
 
             $fieldValue = implode(' TO ', $quoted);
-            $fieldValue = '['. $fieldValue . ']';
+            $fieldValue = '['.$fieldValue.']';
 
             return $fieldValue;
         }
 
-        if (is_array($fieldValue) && count($fieldValue) === 1) {
+        if (is_array($fieldValue) && 1 === count($fieldValue)) {
             $fieldValue = array_pop($fieldValue);
         }
 
         if ($this->useWildcards) {
-            $fieldValue = '*' . $fieldValue . '*';
+            $fieldValue = '*'.$fieldValue.'*';
         }
 
         $termParts = explode(' ', $fieldValue);

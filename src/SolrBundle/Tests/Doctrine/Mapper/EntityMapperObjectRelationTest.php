@@ -1,5 +1,16 @@
 <?php
 
+/*
+ * Solr Bundle
+ * This is a fork of the unmaintained solr bundle from Florian Semm.
+ *
+ * @author Daan Biesterbos     (fork maintainer)
+ * @author Florian Semm (author original bundle)
+ *
+ * Issues can be submitted here:
+ * https://github.com/daanbiesterbos/SolrBundle/issues
+ */
+
 namespace FS\SolrBundle\Tests\Doctrine\Mapper;
 
 use Doctrine\Common\Collections\ArrayCollection;
@@ -9,6 +20,7 @@ use FS\SolrBundle\Doctrine\Annotation\Field;
 use FS\SolrBundle\Doctrine\Hydration\HydratorInterface;
 use FS\SolrBundle\Doctrine\Mapper\EntityMapper;
 use FS\SolrBundle\Doctrine\Mapper\MetaInformationFactory;
+use FS\SolrBundle\Doctrine\Mapper\SolrMappingException;
 use FS\SolrBundle\Tests\Fixtures\EntityNestedProperty;
 use FS\SolrBundle\Tests\Fixtures\NestedEntity;
 use FS\SolrBundle\Tests\Fixtures\ValidTestEntity;
@@ -28,15 +40,6 @@ class EntityMapperObjectRelationTest extends \PHPUnit\Framework\TestCase
      * @var EntityMapper
      */
     private $mapper;
-
-    protected function setUp(): void
-    {
-        $this->doctrineHydrator = $this->createMock(HydratorInterface::class);
-        $this->indexHydrator = $this->createMock(HydratorInterface::class);
-        $this->metaInformationFactory = new MetaInformationFactory(new AnnotationReader(new \Doctrine\Common\Annotations\AnnotationReader()));
-
-        $this->mapper = new EntityMapper($this->doctrineHydrator, $this->indexHydrator, $this->metaInformationFactory);
-    }
 
     /**
      * @test
@@ -87,11 +90,11 @@ class EntityMapperObjectRelationTest extends \PHPUnit\Framework\TestCase
 
     /**
      * @test
-     * @expectedException \FS\SolrBundle\Doctrine\Mapper\SolrMappingException
-     * @expectedExceptionMessage No method "unknown()" found in class "FS\SolrBundle\Tests\Fixtures\EntityNestedProperty"
      */
     public function throwExceptionIfConfiguredGetterDoesNotExists()
     {
+        $this->expectException(SolrMappingException::class);
+        $this->expectExceptionMessage('No method "unknown()" found in class "FS\SolrBundle\Tests\Fixtures\EntityNestedProperty"');
         $collection = new ArrayCollection([new \DateTime(), new \DateTime()]);
 
         $entity = new EntityNestedProperty();
@@ -108,9 +111,9 @@ class EntityMapperObjectRelationTest extends \PHPUnit\Framework\TestCase
      */
     public function mapRelationFieldAllFields()
     {
-        static::markTestSkipped('Intended behaviour unknown. Tests expected _childDocuments but we have a "collection" instead. This test may outdated.');
-
-        return;
+        // Keep around for now, will probably need it when upgrade solr client, avoid having to figure this is out again
+        //static::markTestSkipped('Intended behaviour unknown. Tests expected _childDocuments but we have a "collection" instead. This test may outdated.');
+        //return;
 
         $collectionItem1 = new NestedEntity();
         $collectionItem1->setId(uniqid('', true));
@@ -295,11 +298,11 @@ class EntityMapperObjectRelationTest extends \PHPUnit\Framework\TestCase
 
     /**
      * @test
-     * @expectedException \FS\SolrBundle\Doctrine\Mapper\SolrMappingException
-     * @expectedExceptionMessage The configured getter "asString" in "FS\SolrBundle\Tests\Doctrine\Mapper\TestObject" must return a string or array, got object
      */
     public function callGetterWithObjectAsReturnValue()
     {
+        $this->expectException(SolrMappingException::class);
+        $this->expectExceptionMessage('The configured getter "asString" in "FS\SolrBundle\Tests\Doctrine\Mapper\TestObject" must return a string or array, got object');
         $entity1 = new ValidTestEntity();
 
         $metaInformation = MetaTestInformationFactory::getMetaInformation($entity1);
@@ -326,6 +329,15 @@ class EntityMapperObjectRelationTest extends \PHPUnit\Framework\TestCase
 
         $this->assertArrayHasKey('property_s', $fields);
         $this->assertEquals(1234, $fields['property_s']);
+    }
+
+    protected function setUp(): void
+    {
+        $this->doctrineHydrator = $this->createMock(HydratorInterface::class);
+        $this->indexHydrator = $this->createMock(HydratorInterface::class);
+        $this->metaInformationFactory = new MetaInformationFactory(new AnnotationReader(new \Doctrine\Common\Annotations\AnnotationReader()));
+
+        $this->mapper = new EntityMapper($this->doctrineHydrator, $this->indexHydrator, $this->metaInformationFactory);
     }
 
     /**

@@ -1,9 +1,20 @@
 <?php
 
+/*
+ * Solr Bundle
+ * This is a fork of the unmaintained solr bundle from Florian Semm.
+ *
+ * @author Daan Biesterbos     (fork maintainer)
+ * @author Florian Semm (author original bundle)
+ *
+ * Issues can be submitted here:
+ * https://github.com/daanbiesterbos/SolrBundle/issues
+ */
+
 namespace FS\SolrBundle\Event;
 
 /**
- * List of event which can be fired
+ * List of event which can be fired.
  */
 final class Events
 {
@@ -20,4 +31,4 @@ final class Events
     const POST_CLEAR_INDEX = 'solr.post_clear_index';
 
     const ERROR = 'solr.error';
-} 
+}

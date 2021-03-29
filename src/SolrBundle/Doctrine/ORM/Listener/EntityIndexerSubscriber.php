@@ -1,5 +1,16 @@
 <?php
 
+/*
+ * Solr Bundle
+ * This is a fork of the unmaintained solr bundle from Florian Semm.
+ *
+ * @author Daan Biesterbos     (fork maintainer)
+ * @author Florian Semm (author original bundle)
+ *
+ * Issues can be submitted here:
+ * https://github.com/daanbiesterbos/SolrBundle/issues
+ */
+
 namespace FS\SolrBundle\Doctrine\ORM\Listener;
 
 use DeepCopy\DeepCopy;
@@ -42,13 +53,13 @@ class EntityIndexerSubscriber extends AbstractIndexingListener implements EventS
     {
         $entity = $args->getEntity();
 
-        if ($this->isAbleToIndex($entity) === false) {
+        if (false === $this->isAbleToIndex($entity)) {
             return;
         }
 
         $doctrineChangeSet = $args->getEntityManager()->getUnitOfWork()->getEntityChangeSet($entity);
         try {
-            if ($this->hasChanged($doctrineChangeSet, $entity) === false) {
+            if (false === $this->hasChanged($doctrineChangeSet, $entity)) {
                 return;
             }
 
@@ -65,7 +76,7 @@ class EntityIndexerSubscriber extends AbstractIndexingListener implements EventS
     {
         $entity = $args->getEntity();
 
-        if ($this->isAbleToIndex($entity) === false) {
+        if (false === $this->isAbleToIndex($entity)) {
             return;
         }
 
@@ -79,7 +90,7 @@ class EntityIndexerSubscriber extends AbstractIndexingListener implements EventS
     {
         $entity = $args->getEntity();
 
-        if ($this->isAbleToIndex($entity) === false) {
+        if (false === $this->isAbleToIndex($entity)) {
             return;
         }
 
@@ -88,19 +99,6 @@ class EntityIndexerSubscriber extends AbstractIndexingListener implements EventS
         } else {
             $this->deletedRootEntities[] = $this->emptyCollections($entity);
         }
-    }
-
-    /**
-     * @param object $object
-     *
-     * @return object
-     */
-    private function emptyCollections($object)
-    {
-        $deepcopy = new DeepCopy();
-        $deepcopy->addFilter(new DoctrineEmptyCollectionFilter(), new PropertyTypeMatcher('Doctrine\Common\Collections\Collection'));
-
-        return $deepcopy->copy($object);
     }
 
     /**
@@ -122,5 +120,18 @@ class EntityIndexerSubscriber extends AbstractIndexingListener implements EventS
             $this->solr->removeDocument($entity);
         }
         $this->deletedNestedEntities = [];
+    }
+
+    /**
+     * @param object $object
+     *
+     * @return object
+     */
+    private function emptyCollections($object)
+    {
+        $deepcopy = new DeepCopy();
+        $deepcopy->addFilter(new DoctrineEmptyCollectionFilter(), new PropertyTypeMatcher('Doctrine\Common\Collections\Collection'));
+
+        return $deepcopy->copy($object);
     }
 }

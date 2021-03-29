@@ -1,10 +1,21 @@
 <?php
 
+/*
+ * Solr Bundle
+ * This is a fork of the unmaintained solr bundle from Florian Semm.
+ *
+ * @author Daan Biesterbos     (fork maintainer)
+ * @author Florian Semm (author original bundle)
+ *
+ * Issues can be submitted here:
+ * https://github.com/daanbiesterbos/SolrBundle/issues
+ */
+
 namespace FS\SolrBundle\Tests\Doctrine\Mapper;
 
-use Doctrine\Common\Persistence\ManagerRegistry;
-use Doctrine\Common\Persistence\ObjectManager;
-use Doctrine\Common\Persistence\ObjectRepository;
+use Doctrine\Persistence\ManagerRegistry;
+use Doctrine\Persistence\ObjectManager;
+use Doctrine\Persistence\ObjectRepository;
 use FS\SolrBundle\Doctrine\Annotation\AnnotationReader;
 use FS\SolrBundle\Doctrine\Annotation as Solr;
 use FS\SolrBundle\Doctrine\Hydration\DoctrineHydrator;
@@ -15,6 +26,7 @@ use FS\SolrBundle\Doctrine\Hydration\NoDatabaseValueHydrator;
 use FS\SolrBundle\Doctrine\Hydration\ValueHydrator;
 use FS\SolrBundle\Doctrine\Mapper\EntityMapper;
 use FS\SolrBundle\Doctrine\Mapper\MetaInformationFactory;
+use FS\SolrBundle\Doctrine\Mapper\SolrMappingException;
 use FS\SolrBundle\Tests\Fixtures\EntityWithCustomId;
 use FS\SolrBundle\Tests\Fixtures\PartialUpdateEntity;
 use FS\SolrBundle\Tests\Fixtures\ValidOdmTestDocument;
@@ -39,15 +51,6 @@ class EntityMapperTest extends \PHPUnit\Framework\TestCase
      * @var EntityMapper
      */
     private $mapper;
-
-    protected function setUp(): void
-    {
-        $this->doctrineHydrator = $this->createMock(HydratorInterface::class);
-        $this->indexHydrator = $this->createMock(HydratorInterface::class);
-        $this->metaInformationFactory = new MetaInformationFactory(new AnnotationReader(new \Doctrine\Common\Annotations\AnnotationReader()));
-
-        $this->mapper = new EntityMapper($this->doctrineHydrator, $this->indexHydrator, $this->metaInformationFactory);
-    }
 
     public function testToDocument_DocumentIsUpdated()
     {
@@ -77,7 +80,7 @@ class EntityMapperTest extends \PHPUnit\Framework\TestCase
 
         $this->indexHydrator->expects($this->once())
             ->method('hydrate')
-            ->will($this->returnValue($targetEntity));
+            ->willReturn($targetEntity);
 
         $this->doctrineHydrator->expects($this->never())
             ->method('hydrate');
@@ -130,17 +133,14 @@ class EntityMapperTest extends \PHPUnit\Framework\TestCase
 
     /**
      * @test
-     * @expectedException \FS\SolrBundle\Doctrine\Mapper\SolrMappingException
-     * @expectedExceptionMessage Please check your config. Given entity is not a Doctrine entity, but Doctrine hydration is enabled. Use setHydrationMode(HydrationModes::HYDRATE_DOCTRINE) to fix this.
      */
     public function throwExceptionIfGivenObjectIsNotEntityButItShould()
     {
+        $this->expectException(SolrMappingException::class);
+        $this->expectExceptionMessage('Please check your config. Given entity is not a Doctrine entity, but Doctrine hydration is enabled. Use setHydrationMode(HydrationModes::HYDRATE_DOCTRINE) to fix this.');
         $targetEntity = new PlainObject();
-
         $this->indexHydrator = new IndexHydrator(new NoDatabaseValueHydrator());
-
         $this->doctrineHydrator = new DoctrineHydrator(new ValueHydrator());
-
         $this->mapper->toEntity(new Document(['id' => 'document_1', 'title' => 'value from index']), $targetEntity);
     }
 
@@ -185,16 +185,25 @@ class EntityMapperTest extends \PHPUnit\Framework\TestCase
 
     /**
      * @test
-     * @expectedException \FS\SolrBundle\Doctrine\Mapper\SolrMappingException
-     * @expectedExceptionMessage No entity id set for "FS\SolrBundle\Tests\Fixtures\ValidTestEntity"
      */
     public function throwExceptionIfEntityHasNoId()
     {
+        $this->expectException(SolrMappingException::class);
+        $this->expectExceptionMessage('No entity id set for "FS\SolrBundle\Tests\Fixtures\ValidTestEntity"');
         $entity = new ValidTestEntity();
 
         $metaInformation = $this->metaInformationFactory->loadInformation($entity);
 
         $this->mapper->toDocument($metaInformation);
+    }
+
+    protected function setUp(): void
+    {
+        $this->doctrineHydrator = $this->createMock(HydratorInterface::class);
+        $this->indexHydrator = $this->createMock(HydratorInterface::class);
+        $this->metaInformationFactory = new MetaInformationFactory(new AnnotationReader(new \Doctrine\Common\Annotations\AnnotationReader()));
+
+        $this->mapper = new EntityMapper($this->doctrineHydrator, $this->indexHydrator, $this->metaInformationFactory);
     }
 
     private function setupOrmManager($entity, $expectedEntityId)
@@ -203,17 +212,17 @@ class EntityMapperTest extends \PHPUnit\Framework\TestCase
         $repository->expects($this->once())
             ->method('find')
             ->with($expectedEntityId)
-            ->will($this->returnValue($entity));
+            ->willReturn($entity);
 
         $manager = $this->createMock(ObjectManager::class);
         $manager->expects($this->once())
             ->method('getRepository')
-            ->will($this->returnValue($repository));
+            ->willReturn($repository);
 
         $managerRegistry = $this->createMock(ManagerRegistry::class);
         $managerRegistry->expects($this->once())
             ->method('getManager')
-            ->will($this->returnValue($manager));
+            ->willReturn($manager);
 
         return $managerRegistry;
     }
@@ -224,17 +233,17 @@ class EntityMapperTest extends \PHPUnit\Framework\TestCase
         $repository->expects($this->once())
             ->method('find')
             ->with($expectedEntityId)
-            ->will($this->returnValue($entity));
+            ->willReturn($entity);
 
         $manager = $this->createMock(ObjectManager::class);
         $manager->expects($this->once())
             ->method('getRepository')
-            ->will($this->returnValue($repository));
+            ->willReturn($repository);
 
         $managerRegistry = $this->createMock(ManagerRegistry::class);
         $managerRegistry->expects($this->once())
             ->method('getManager')
-            ->will($this->returnValue($manager));
+            ->willReturn($manager);
 
         return $managerRegistry;
     }

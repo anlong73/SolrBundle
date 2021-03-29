@@ -1,11 +1,22 @@
 <?php
 
+/*
+ * Solr Bundle
+ * This is a fork of the unmaintained solr bundle from Florian Semm.
+ *
+ * @author Daan Biesterbos     (fork maintainer)
+ * @author Florian Semm (author original bundle)
+ *
+ * Issues can be submitted here:
+ * https://github.com/daanbiesterbos/SolrBundle/issues
+ */
+
 namespace FS\SolrBundle\Doctrine\Hydration;
 
 use FS\SolrBundle\Doctrine\Mapper\MetaInformationInterface;
 
 /**
- * Hydrates blank Entity from Document
+ * Hydrates blank Entity from Document.
  */
 class IndexHydrator implements HydratorInterface
 {
@@ -34,4 +45,4 @@ class IndexHydrator implements HydratorInterface
 
         return $this->valueHydrator->hydrate($document, $metaInformation);
     }
-} 
+}

@@ -1,5 +1,16 @@
 <?php
 
+/*
+ * Solr Bundle
+ * This is a fork of the unmaintained solr bundle from Florian Semm.
+ *
+ * @author Daan Biesterbos     (fork maintainer)
+ * @author Florian Semm (author original bundle)
+ *
+ * Issues can be submitted here:
+ * https://github.com/daanbiesterbos/SolrBundle/issues
+ */
+
 namespace FS\SolrBundle\Query;
 
 use FS\SolrBundle\Query\Exception\UnknownFieldException;
@@ -9,27 +20,27 @@ interface QueryBuilderInterface
     /**
      * @param string $field
      *
-     * @return QueryBuilderInterface
-     *
      * @throws UnknownFieldException if $field does not exists
+     *
+     * @return QueryBuilderInterface
      */
     public function where($field);
 
     /**
      * @param string $field
      *
-     * @return QueryBuilderInterface
-     *
      * @throws UnknownFieldException if $field does not exists
+     *
+     * @return QueryBuilderInterface
      */
     public function andWhere($field);
 
     /**
      * @param string $field
      *
-     * @return QueryBuilderInterface
-     *
      * @throws UnknownFieldException if $field does not exists
+     *
+     * @return QueryBuilderInterface
      */
     public function orWhere($field);
 
@@ -167,7 +178,7 @@ interface QueryBuilderInterface
      * @return QueryBuilderInterface
      */
     public function greaterThan($value);
-    
+
     /**
      * @param string $value
      *
@@ -181,7 +192,7 @@ interface QueryBuilderInterface
      * @return QueryBuilderInterface
      */
     public function lessThan($value);
-    
+
     /**
      * @param float $value
      *

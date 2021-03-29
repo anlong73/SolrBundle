@@ -1,4 +1,16 @@
 <?php
+
+/*
+ * Solr Bundle
+ * This is a fork of the unmaintained solr bundle from Florian Semm.
+ *
+ * @author Daan Biesterbos     (fork maintainer)
+ * @author Florian Semm (author original bundle)
+ *
+ * Issues can be submitted here:
+ * https://github.com/daanbiesterbos/SolrBundle/issues
+ */
+
 namespace FS\SolrBundle\Repository;
 
 use FS\SolrBundle\Doctrine\Hydration\HydrationModes;
@@ -10,11 +22,10 @@ use FS\SolrBundle\Solr;
 use FS\SolrBundle\SolrInterface;
 
 /**
- * Common repository class to find documents in the index
+ * Common repository class to find documents in the index.
  */
 class Repository implements RepositoryInterface
 {
-
     /**
      * @var Solr
      */
@@ -47,7 +58,7 @@ class Repository implements RepositoryInterface
      */
     public function find($id)
     {
-        $documentKey = $this->metaInformation->getDocumentName() . '_' . $id;
+        $documentKey = $this->metaInformation->getDocumentName().'_'.$id;
 
         $query = new FindByIdentifierQuery();
         $query->setIndex($this->metaInformation->getIndex());
@@ -57,7 +68,7 @@ class Repository implements RepositoryInterface
         $query->setHydrationMode($this->hydrationMode);
         $found = $this->solr->query($query);
 
-        if (count($found) == 0) {
+        if (0 === count($found)) {
             return null;
         }
 
@@ -89,7 +100,7 @@ class Repository implements RepositoryInterface
         $query->setHydrationMode($this->hydrationMode);
         $query->setRows(100000);
         $query->setUseAndOperator(true);
-        $query->addSearchTerm('id', $this->metaInformation->getDocumentName() . '_*');
+        $query->addSearchTerm('id', $this->metaInformation->getDocumentName().'_*');
         $query->setQueryDefaultField('id');
 
         $helper = $query->getHelper();
@@ -111,7 +122,7 @@ class Repository implements RepositoryInterface
         $query->setHydrationMode($this->hydrationMode);
         $query->setRows(1);
         $query->setUseAndOperator(true);
-        $query->addSearchTerm('id', $this->metaInformation->getDocumentName() . '_*');
+        $query->addSearchTerm('id', $this->metaInformation->getDocumentName().'_*');
         $query->setQueryDefaultField('id');
 
         $helper = $query->getHelper();

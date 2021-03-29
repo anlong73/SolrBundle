@@ -1,8 +1,19 @@
 <?php
+
+/*
+ * Solr Bundle
+ * This is a fork of the unmaintained solr bundle from Florian Semm.
+ *
+ * @author Daan Biesterbos     (fork maintainer)
+ * @author Florian Semm (author original bundle)
+ *
+ * Issues can be submitted here:
+ * https://github.com/daanbiesterbos/SolrBundle/issues
+ */
+
 namespace FS\SolrBundle\Query;
 
 use FS\SolrBundle\Doctrine\Mapper\MetaInformationInterface;
-use FS\SolrBundle\Solr;
 use FS\SolrBundle\SolrInterface;
 use Solarium\QueryType\Select\Query\Query as SolariumQuery;
 use Solarium\QueryType\Update\Query\Document\Document;
@@ -15,7 +26,6 @@ abstract class AbstractQuery extends SolariumQuery
     protected $document = null;
 
     /**
-     *
      * @var SolrInterface
      */
     protected $solr = null;
@@ -26,7 +36,7 @@ abstract class AbstractQuery extends SolariumQuery
     protected $index = null;
 
     /**
-     * Classname of entity
+     * Classname of entity.
      *
      * @var string
      */
@@ -105,7 +115,7 @@ abstract class AbstractQuery extends SolariumQuery
     }
 
     /**
-     * modes defined in FS\SolrBundle\Doctrine\Hydration\HydrationModes
+     * modes defined in FS\SolrBundle\Doctrine\Hydration\HydrationModes.
      *
      * @param string $mode
      */

@@ -1,13 +1,24 @@
 <?php
 
+/*
+ * Solr Bundle
+ * This is a fork of the unmaintained solr bundle from Florian Semm.
+ *
+ * @author Daan Biesterbos     (fork maintainer)
+ * @author Florian Semm (author original bundle)
+ *
+ * Issues can be submitted here:
+ * https://github.com/daanbiesterbos/SolrBundle/issues
+ */
+
 namespace FS\SolrBundle\Tests\Doctrine\ORM\Listener;
 
 use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\Common\Persistence\ObjectManager;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Event\LifecycleEventArgs;
 use Doctrine\ORM\Event\PostFlushEventArgs;
 use Doctrine\ORM\UnitOfWork;
+use Doctrine\Persistence\ObjectManager;
 use FS\SolrBundle\Doctrine\Annotation\AnnotationReader;
 use FS\SolrBundle\Doctrine\Mapper\MetaInformationFactory;
 use FS\SolrBundle\Doctrine\ORM\Listener\EntityIndexerSubscriber;
@@ -15,9 +26,13 @@ use FS\SolrBundle\SolrInterface;
 use FS\SolrBundle\Tests\Fixtures\NestedEntity;
 use FS\SolrBundle\Tests\Fixtures\NotIndexedEntity;
 use FS\SolrBundle\Tests\Fixtures\ValidTestEntityWithCollection;
+use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
 
-class EntityIndexerSubscriberTest extends \PHPUnit\Framework\TestCase
+/**
+ * Class EntityIndexerSubscriberTest.
+ */
+class EntityIndexerSubscriberTest extends TestCase
 {
     /**
      * @var EntityIndexerSubscriber
@@ -29,15 +44,6 @@ class EntityIndexerSubscriberTest extends \PHPUnit\Framework\TestCase
     private $metaInformationFactory;
 
     private $logger;
-
-    protected function setUp(): void
-    {
-        $this->logger = $this->createMock(LoggerInterface::class);
-        $this->solr = $this->createMock(SolrInterface::class);
-        $this->metaInformationFactory = new MetaInformationFactory(new AnnotationReader(new \Doctrine\Common\Annotations\AnnotationReader()));
-
-        $this->subscriber = new EntityIndexerSubscriber($this->solr, $this->metaInformationFactory, $this->logger);
-    }
 
     /**
      * @test
@@ -53,25 +59,24 @@ class EntityIndexerSubscriberTest extends \PHPUnit\Framework\TestCase
 
         $objectManager = $this->createMock(ObjectManager::class);
 
-        $this->solr->expects($this->at(0))
+        $this->solr->expects(self::exactly(2))
             ->method('removeDocument')
-            ->with($this->callback(function (ValidTestEntityWithCollection $entity) {
-                if (count($entity->getCollection())) {
-                    return false;
-                }
+            ->willReturnOnConsecutiveCalls(
+                $this->callback(function (ValidTestEntityWithCollection $entity) {
+                    if (count($entity->getCollection())) {
+                        return false;
+                    }
 
-                return true;
-            }));
+                    return true;
+                }),
+                $this->callback(function ($entity) {
+                    if (!$entity instanceof NestedEntity) {
+                        return false;
+                    }
 
-        $this->solr->expects($this->at(1))
-            ->method('removeDocument')
-            ->with($this->callback(function ($entity) {
-                if (!$entity instanceof NestedEntity) {
-                    return false;
-                }
-
-                return true;
-            }));
+                    return true;
+                })
+            );
 
         $deleteRootEntityEvent = new LifecycleEventArgs($entity, $objectManager);
         $this->subscriber->preRemove($deleteRootEntityEvent);
@@ -95,13 +100,12 @@ class EntityIndexerSubscriberTest extends \PHPUnit\Framework\TestCase
             ->with($changedEntity);
 
         $unitOfWork = $this->createMock(UnitOfWork::class);
-        $unitOfWork->expects($this->at(0))
+        $unitOfWork->expects(self::exactly(2))
             ->method('getEntityChangeSet')
-            ->willReturn(['title' => 'value']);
-
-        $unitOfWork->expects($this->at(1))
-            ->method('getEntityChangeSet')
-            ->willReturn([]);
+            ->willReturnOnConsecutiveCalls(
+                ['title' => 'value'],
+                []
+            );
 
         $objectManager = $this->createMock(EntityManagerInterface::class);
         $objectManager->expects($this->any())
@@ -138,5 +142,15 @@ class EntityIndexerSubscriberTest extends \PHPUnit\Framework\TestCase
         $this->subscriber->preRemove($lifecycleEventArgs);
 
         $this->subscriber->postFlush(new PostFlushEventArgs($objectManager));
+    }
+
+    protected function setUp(): void
+    {
+        $this->logger = $this->createMock(LoggerInterface::class);
+        $this->solr = $this->createMock(SolrInterface::class);
+        $this->metaInformationFactory = new MetaInformationFactory(
+            new AnnotationReader(new \Doctrine\Common\Annotations\AnnotationReader())
+        );
+        $this->subscriber = new EntityIndexerSubscriber($this->solr, $this->metaInformationFactory, $this->logger);
     }
 }

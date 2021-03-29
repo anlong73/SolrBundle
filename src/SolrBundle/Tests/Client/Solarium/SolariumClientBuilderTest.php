@@ -1,5 +1,16 @@
 <?php
 
+/*
+ * Solr Bundle
+ * This is a fork of the unmaintained solr bundle from Florian Semm.
+ *
+ * @author Daan Biesterbos     (fork maintainer)
+ * @author Florian Semm (author original bundle)
+ *
+ * Issues can be submitted here:
+ * https://github.com/daanbiesterbos/SolrBundle/issues
+ */
+
 namespace FS\SolrBundle\Tests\Client\Solarium;
 
 use FS\SolrBundle\Client\Solarium\SolariumClientBuilder;
@@ -11,23 +22,6 @@ class SolariumClientBuilderTest extends \PHPUnit\Framework\TestCase
      * @var array
      */
     private $defaultEndpoints;
-
-    /**
-     * {@inheritdoc}
-     */
-    protected function setUp(): void
-    {
-        $this->defaultEndpoints = [
-            'unittest' => [
-                'schema' => 'http',
-                'host' => '127.0.0.1',
-                'port' => 8983,
-                'path' => '/solr',
-                'timeout' => 5,
-                'core' => null,
-            ],
-        ];
-    }
 
     public function testCreateClientWithoutDsn()
     {
@@ -118,6 +112,23 @@ class SolariumClientBuilderTest extends \PHPUnit\Framework\TestCase
                 'https://example.com:1234/solr',
                 'https://example.com:1234/solr/',
                 'Test DSN with HTTPS',
+            ],
+        ];
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUp(): void
+    {
+        $this->defaultEndpoints = [
+            'unittest' => [
+                'schema' => 'http',
+                'host' => '127.0.0.1',
+                'port' => 8983,
+                'path' => '/solr',
+                'timeout' => 5,
+                'core' => null,
             ],
         ];
     }

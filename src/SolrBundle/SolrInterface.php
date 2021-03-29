@@ -1,5 +1,16 @@
 <?php
 
+/*
+ * Solr Bundle
+ * This is a fork of the unmaintained solr bundle from Florian Semm.
+ *
+ * @author Daan Biesterbos     (fork maintainer)
+ * @author Florian Semm (author original bundle)
+ *
+ * Issues can be submitted here:
+ * https://github.com/daanbiesterbos/SolrBundle/issues
+ */
+
 namespace FS\SolrBundle;
 
 use FS\SolrBundle\Query\AbstractQuery;
@@ -9,7 +20,6 @@ use FS\SolrBundle\Repository\RepositoryInterface;
 
 interface SolrInterface
 {
-
     /**
      * @param object|string $entity entity, entity-alias or classname
      */
@@ -25,9 +35,9 @@ interface SolrInterface
     /**
      * @param AbstractQuery $query
      *
-     * @return array of found documents
-     *
      * @throws SolrException
+     *
+     * @return array of found documents
      */
     public function query(AbstractQuery $query): array;
 
@@ -41,9 +51,9 @@ interface SolrInterface
     /**
      * @param object|string $entity entity, entity-alias or classname
      *
-     * @return RepositoryInterface
-     *
      * @throws SolrException if repository of the given $entityAlias does not extend FS\SolrBundle\Repository\Repository
+     *
+     * @return RepositoryInterface
      */
     public function getRepository($entity): RepositoryInterface;
 

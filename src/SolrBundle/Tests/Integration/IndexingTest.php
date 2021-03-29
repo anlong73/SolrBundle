@@ -1,5 +1,16 @@
 <?php
 
+/*
+ * Solr Bundle
+ * This is a fork of the unmaintained solr bundle from Florian Semm.
+ *
+ * @author Daan Biesterbos     (fork maintainer)
+ * @author Florian Semm (author original bundle)
+ *
+ * Issues can be submitted here:
+ * https://github.com/daanbiesterbos/SolrBundle/issues
+ */
+
 namespace FS\SolrBundle\Tests\Integration;
 
 use Doctrine\ORM\EntityManagerInterface;
@@ -42,59 +53,6 @@ class IndexingTest extends \PHPUnit\Framework\TestCase
      * @var EventDispatcherFake
      */
     private $eventDispatcher;
-
-    protected function setUp(): void
-    {
-        $this->eventDispatcher = new EventDispatcherFake();
-        $this->client = $this->setupSolrClient();
-
-        try {
-            $this->client->ping(new Query());
-        } catch (\Exception $e) {
-            $this->markTestSkipped('solr is not running on localhost:8983');
-
-            return;
-        }
-
-        $metainformationFactory = new MetaInformationFactory(new AnnotationReader(new \Doctrine\Common\Annotations\AnnotationReader()));
-        $logger = $this->createMock(LoggerInterface::class);
-
-        $this->solr = new Solr(
-            $this->client,
-            $this->eventDispatcher,
-            $metainformationFactory,
-            new EntityMapper(
-                new DoctrineHydrator(new ValueHydrator()),
-                new IndexHydrator(new ValueHydrator()),
-                $metainformationFactory
-            )
-        );
-
-        $this->solr->clearIndex();
-
-        $this->doctrineSubscriber = new EntityIndexerSubscriber($this->solr, $metainformationFactory, $logger);
-    }
-
-    /**
-     * Solarium Client with two cores (core0, core1).
-     *
-     * @return Client
-     */
-    private function setupSolrClient()
-    {
-        $config = [
-            'core0' => [
-                'host' => 'localhost',
-                'port' => 8983,
-                'path' => '/solr/core0',
-            ],
-        ];
-
-        $builder = new SolariumClientBuilder($config, $this->eventDispatcher);
-        $solrClient = $builder->build();
-
-        return $solrClient;
-    }
 
     /**
      * @test
@@ -151,38 +109,6 @@ class IndexingTest extends \PHPUnit\Framework\TestCase
         $this->doctrineSubscriber->postFlush(new PostFlushEventArgs($objectManager));
 
         $this->assertEntityNotExists('deleteEntityWithOneToOne', 'deleteEntityWithOneToOne category');
-    }
-
-    private function assertEntityExists($postName, $categoryName)
-    {
-        $query = $this->client->createSelect();
-        $query->setQuery('title_s:'.$postName);
-
-        $result = $this->client->execute($query);
-
-        $this->assertEquals(1, $result->getData()['response']['numFound']);
-
-        $query->setQuery('title_s:"'.$categoryName.'"');
-
-        $result = $this->client->execute($query);
-
-        $this->assertEquals(1, $result->getData()['response']['numFound']);
-    }
-
-    private function assertEntityNotExists($postName, $categoryName)
-    {
-        $query = $this->client->createSelect();
-        $query->setQuery('title_s:'.$postName);
-
-        $result = $this->client->execute($query);
-
-        $this->assertEquals(0, $result->getData()['response']['numFound']);
-
-        $query->setQuery('title_s:"'.$categoryName.'"');
-
-        $result = $this->client->execute($query);
-
-        $this->assertEquals(0, $result->getData()['response']['numFound']);
     }
 
     /**
@@ -246,5 +172,90 @@ class IndexingTest extends \PHPUnit\Framework\TestCase
         $expectedRequest = '<update><add><doc><field name="id">post_1</field><field name="title_s">indexEntityWithOneToMany</field><doc><field name="id">tag_1</field><field name="name_s">tag indexEntityWithOneToMany 1</field></doc><doc><field name="id">tag_2</field><field name="name_s">tag indexEntityWithOneToMany 2</field></doc></doc></add><commit/></update>';
 
         $this->assertEquals($expectedRequest, $events['solarium.core.preExecuteRequest']->getRequest()->getRawData());
+    }
+
+    protected function setUp(): void
+    {
+        $this->eventDispatcher = new EventDispatcherFake();
+        $this->client = $this->setupSolrClient();
+
+        try {
+            $this->client->ping(new Query());
+        } catch (\Exception $e) {
+            $this->markTestSkipped('solr is not running on localhost:8983');
+
+            return;
+        }
+
+        $metainformationFactory = new MetaInformationFactory(new AnnotationReader(new \Doctrine\Common\Annotations\AnnotationReader()));
+        $logger = $this->createMock(LoggerInterface::class);
+
+        $this->solr = new Solr(
+            $this->client,
+            $this->eventDispatcher,
+            $metainformationFactory,
+            new EntityMapper(
+                new DoctrineHydrator(new ValueHydrator()),
+                new IndexHydrator(new ValueHydrator()),
+                $metainformationFactory
+            )
+        );
+
+        $this->solr->clearIndex();
+
+        $this->doctrineSubscriber = new EntityIndexerSubscriber($this->solr, $metainformationFactory, $logger);
+    }
+
+    /**
+     * Solarium Client with two cores (core0, core1).
+     *
+     * @return Client
+     */
+    private function setupSolrClient()
+    {
+        $config = [
+            'core0' => [
+                'host' => 'localhost',
+                'port' => 8983,
+                'path' => '/solr/core0',
+            ],
+        ];
+
+        $builder = new SolariumClientBuilder($config, $this->eventDispatcher);
+        $solrClient = $builder->build();
+
+        return $solrClient;
+    }
+
+    private function assertEntityExists($postName, $categoryName)
+    {
+        $query = $this->client->createSelect();
+        $query->setQuery('title_s:'.$postName);
+
+        $result = $this->client->execute($query);
+
+        $this->assertEquals(1, $result->getData()['response']['numFound']);
+
+        $query->setQuery('title_s:"'.$categoryName.'"');
+
+        $result = $this->client->execute($query);
+
+        $this->assertEquals(1, $result->getData()['response']['numFound']);
+    }
+
+    private function assertEntityNotExists($postName, $categoryName)
+    {
+        $query = $this->client->createSelect();
+        $query->setQuery('title_s:'.$postName);
+
+        $result = $this->client->execute($query);
+
+        $this->assertEquals(0, $result->getData()['response']['numFound']);
+
+        $query->setQuery('title_s:"'.$categoryName.'"');
+
+        $result = $this->client->execute($query);
+
+        $this->assertEquals(0, $result->getData()['response']['numFound']);
     }
 }

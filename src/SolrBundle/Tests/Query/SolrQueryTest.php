@@ -1,9 +1,21 @@
 <?php
 
+/*
+ * Solr Bundle
+ * This is a fork of the unmaintained solr bundle from Florian Semm.
+ *
+ * @author Daan Biesterbos     (fork maintainer)
+ * @author Florian Semm (author original bundle)
+ *
+ * Issues can be submitted here:
+ * https://github.com/daanbiesterbos/SolrBundle/issues
+ */
+
 namespace FS\SolrBundle\Tests\Query;
 
 use FS\SolrBundle\Doctrine\Annotation\Id;
 use FS\SolrBundle\Doctrine\Mapper\MetaInformation;
+use FS\SolrBundle\Query\Exception\UnknownFieldException;
 use FS\SolrBundle\Query\SolrQuery;
 use FS\SolrBundle\SolrInterface;
 
@@ -12,51 +24,6 @@ use FS\SolrBundle\SolrInterface;
  */
 class SolrQueryTest extends \PHPUnit\Framework\TestCase
 {
-    private function getFieldMapping()
-    {
-        return [
-            'id' => 'id',
-            'title_s' => 'title',
-            'text_t' => 'text',
-            'created_at_dt' => 'created_at',
-        ];
-    }
-
-    /**
-     * @return SolrQuery
-     */
-    private function createQueryWithFieldMapping()
-    {
-        $solr = $this->createMock(SolrInterface::class);
-
-        $idField = new Id([]);
-        $idField->name = 'id';
-
-        $metaInformation = new MetaInformation();
-        $metaInformation->setDocumentName('post');
-        $metaInformation->setIdentifier($idField);
-
-        $solrQuery = new SolrQuery();
-        $solrQuery->setSolr($solr);
-        $solrQuery->setMappedFields($this->getFieldMapping());
-        $solrQuery->setMetaInformation($metaInformation);
-
-        return $solrQuery;
-    }
-
-    /**
-     * @return SolrQuery
-     */
-    private function createQueryWithSearchTerms()
-    {
-        $query = $this->createQueryWithFieldMapping();
-
-        $query->addSearchTerm('title', 'foo')
-            ->addSearchTerm('text', 'bar');
-
-        return $query;
-    }
-
     public function testAddField_AllFieldsAreMapped()
     {
         $solrQuery = $this->createQueryWithFieldMapping();
@@ -67,8 +34,8 @@ class SolrQueryTest extends \PHPUnit\Framework\TestCase
         $fields = $solrQuery->getFields();
 
         $this->assertEquals(2, count($fields));
-        $this->assertTrue(in_array('title_s', $fields));
-        $this->assertTrue(in_array('text_t', $fields));
+        $this->assertTrue(in_array('title_s', $fields, true));
+        $this->assertTrue(in_array('text_t', $fields, true));
     }
 
     public function testAddField_OneFieldOfTwoNotMapped()
@@ -81,7 +48,7 @@ class SolrQueryTest extends \PHPUnit\Framework\TestCase
         $fields = $solrQuery->getFields();
 
         $this->assertEquals(1, count($fields));
-        $this->assertTrue(in_array('title_s', $fields));
+        $this->assertTrue(in_array('title_s', $fields, true));
     }
 
     public function testGetSolrQuery_QueryTermShouldCorrect()
@@ -107,11 +74,9 @@ class SolrQueryTest extends \PHPUnit\Framework\TestCase
         $this->assertTrue(array_key_exists('text_t', $terms), 'text_t not in terms');
     }
 
-    /**
-     * @expectedException \FS\SolrBundle\Query\Exception\UnknownFieldException
-     */
     public function testAddSearchTerm_UnknownField()
     {
+        $this->expectException(UnknownFieldException::class);
         $solrQuery = $this->createQueryWithFieldMapping();
 
         $solrQuery->addSearchTerm('unknownfield', 'foo');
@@ -265,5 +230,50 @@ class SolrQueryTest extends \PHPUnit\Framework\TestCase
         $query->addSearchTerm('title', 'test post');
 
         $this->assertEquals('title_s:"test post" OR {!parent which="id:post_*"}name_s:test*bar', $query->getQuery());
+    }
+
+    private function getFieldMapping()
+    {
+        return [
+            'id' => 'id',
+            'title_s' => 'title',
+            'text_t' => 'text',
+            'created_at_dt' => 'created_at',
+        ];
+    }
+
+    /**
+     * @return SolrQuery
+     */
+    private function createQueryWithFieldMapping()
+    {
+        $solr = $this->createMock(SolrInterface::class);
+
+        $idField = new Id([]);
+        $idField->name = 'id';
+
+        $metaInformation = new MetaInformation();
+        $metaInformation->setDocumentName('post');
+        $metaInformation->setIdentifier($idField);
+
+        $solrQuery = new SolrQuery();
+        $solrQuery->setSolr($solr);
+        $solrQuery->setMappedFields($this->getFieldMapping());
+        $solrQuery->setMetaInformation($metaInformation);
+
+        return $solrQuery;
+    }
+
+    /**
+     * @return SolrQuery
+     */
+    private function createQueryWithSearchTerms()
+    {
+        $query = $this->createQueryWithFieldMapping();
+
+        $query->addSearchTerm('title', 'foo')
+            ->addSearchTerm('text', 'bar');
+
+        return $query;
     }
 }

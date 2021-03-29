@@ -1,22 +1,32 @@
 <?php
 
+/*
+ * Solr Bundle
+ * This is a fork of the unmaintained solr bundle from Florian Semm.
+ *
+ * @author Daan Biesterbos     (fork maintainer)
+ * @author Florian Semm (author original bundle)
+ *
+ * Issues can be submitted here:
+ * https://github.com/daanbiesterbos/SolrBundle/issues
+ */
+
 namespace FS\SolrBundle\DependencyInjection;
 
-use Symfony\Component\DependencyInjection\Reference;
-use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\Config\FileLocator;
-use Symfony\Component\HttpKernel\DependencyInjection\Extension;
+use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Loader;
+use Symfony\Component\DependencyInjection\Reference;
+use Symfony\Component\HttpKernel\DependencyInjection\Extension;
 
 class FSSolrExtension extends Extension
 {
-
     /**
      * {@inheritdoc}
      */
     public function load(array $configs, ContainerBuilder $container)
     {
-        $loader = new Loader\XmlFileLoader($container, new FileLocator(__DIR__ . '/../Resources/config'));
+        $loader = new Loader\XmlFileLoader($container, new FileLocator(__DIR__.'/../Resources/config'));
         $loader->load('services.xml');
         $loader->load('event_listener.xml');
         $loader->load('log_listener.xml');
@@ -32,7 +42,6 @@ class FSSolrExtension extends Extension
 
         $this->setupDoctrineListener($config, $container);
         $this->setupDoctrineConfiguration($config, $container);
-
     }
 
     /**
@@ -45,11 +54,10 @@ class FSSolrExtension extends Extension
 
         $builderDefinition = $container->getDefinition('solr.client.adapter.builder');
         $builderDefinition->replaceArgument(0, $endpoints);
-        $builderDefinition->addMethodCall('addPlugin', array('request_debugger', new Reference('solr.debug.client_debugger')));
+        $builderDefinition->addMethodCall('addPlugin', ['request_debugger', new Reference('solr.debug.client_debugger')]);
     }
 
     /**
-     *
      * @param array            $config
      * @param ContainerBuilder $container
      */
@@ -62,7 +70,7 @@ class FSSolrExtension extends Extension
             foreach ($entityManagersNames as $entityManager) {
                 $container->getDefinition('solr.doctrine.classnameresolver.known_entity_namespaces')->addMethodCall(
                     'addEntityNamespaces',
-                    array(new Reference(sprintf('doctrine.orm.%s_configuration', $entityManager)))
+                    [new Reference(sprintf('doctrine.orm.%s_configuration', $entityManager))]
                 );
             }
         }
@@ -74,14 +82,14 @@ class FSSolrExtension extends Extension
             foreach ($documentManagersNames as $documentManager) {
                 $container->getDefinition('solr.doctrine.classnameresolver.known_entity_namespaces')->addMethodCall(
                     'addDocumentNamespaces',
-                    array(new Reference(sprintf('doctrine_mongodb.odm.%s_configuration', $documentManager)))
+                    [new Reference(sprintf('doctrine_mongodb.odm.%s_configuration', $documentManager))]
                 );
             }
         }
 
         $container->getDefinition('solr.meta.information.factory')->addMethodCall(
             'setClassnameResolver',
-            array(new Reference('solr.doctrine.classnameresolver'))
+            [new Reference('solr.doctrine.classnameresolver')]
         );
     }
 
@@ -97,7 +105,7 @@ class FSSolrExtension extends Extension
     {
         $autoIndexing = $container->getParameter('solr.auto_index');
 
-        if ($autoIndexing == false) {
+        if (false === $autoIndexing) {
             return;
         }
 
@@ -113,7 +121,7 @@ class FSSolrExtension extends Extension
     /**
      * @param ContainerBuilder $container
      *
-     * @return boolean
+     * @return bool
      */
     private function isODMConfigured(ContainerBuilder $container)
     {
@@ -123,7 +131,7 @@ class FSSolrExtension extends Extension
     /**
      * @param ContainerBuilder $container
      *
-     * @return boolean
+     * @return bool
      */
     private function isOrmConfigured(ContainerBuilder $container)
     {

@@ -1,14 +1,25 @@
 <?php
+
+/*
+ * Solr Bundle
+ * This is a fork of the unmaintained solr bundle from Florian Semm.
+ *
+ * @author Daan Biesterbos     (fork maintainer)
+ * @author Florian Semm (author original bundle)
+ *
+ * Issues can be submitted here:
+ * https://github.com/daanbiesterbos/SolrBundle/issues
+ */
+
 namespace FS\SolrBundle\Event\Listener;
 
 use FS\SolrBundle\Event\Event;
 
 /**
- * Create a log-entry if a document was insert
+ * Create a log-entry if a document was insert.
  */
 class InsertLogListener extends AbstractLogListener
 {
-
     /**
      * @param Event $event
      */

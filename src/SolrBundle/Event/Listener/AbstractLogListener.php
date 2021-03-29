@@ -1,4 +1,16 @@
 <?php
+
+/*
+ * Solr Bundle
+ * This is a fork of the unmaintained solr bundle from Florian Semm.
+ *
+ * @author Daan Biesterbos     (fork maintainer)
+ * @author Florian Semm (author original bundle)
+ *
+ * Issues can be submitted here:
+ * https://github.com/daanbiesterbos/SolrBundle/issues
+ */
+
 namespace FS\SolrBundle\Event\Listener;
 
 use FS\SolrBundle\Doctrine\Mapper\MetaInformationInterface;
@@ -6,7 +18,6 @@ use Psr\Log\LoggerInterface;
 
 abstract class AbstractLogListener
 {
-
     /**
      * @var LoggerInterface
      */
@@ -27,7 +38,7 @@ abstract class AbstractLogListener
      */
     protected function createDocumentNameWithId(MetaInformationInterface $metaInformation)
     {
-        return $metaInformation->getDocumentName() . ':' . $metaInformation->getEntityId();
+        return $metaInformation->getDocumentName().':'.$metaInformation->getEntityId();
     }
 
     /**

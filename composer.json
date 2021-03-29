@@ -1,50 +1,70 @@
 {
-  "name": "daanbiesterbos/solr-bundle",
-  "type": "symfony-bundle",
-  "description": "Symfony Solr integration bundle",
-  "keywords": [
-    "search",
-    "index",
-    "symfony",
-    "solr"
-  ],
-  "homepage": "https://github.com/daanbiesterbos/SolrBundle",
-  "license": "MIT",
-  "require": {
-    "php": "^7.3",
-    "solarium/solarium": "^4.0",
-    "symfony/dependency-injection": "^4.4|^5",
-    "symfony/cache": "^4.4|^5",
-    "symfony/http-kernel": "^4.4|^5",
-    "symfony/config": "^4.4|^5",
-    "symfony/doctrine-bridge": "^4.4|^5",
-    "minimalcode/search": "^1.0",
-    "ramsey/uuid": "^3.5|^4.1",
-    "myclabs/deep-copy": "^1.6",
-    "doctrine/annotations": "^1.7"
-  },
-  "require-dev": {
-    "roave/security-advisories": "dev-master",
-    "doctrine/mongodb-odm-bundle": "^4.2",
-    "doctrine/orm": "^2.4",
-    "phpunit/phpunit": "^5.4"
-  },
-  "minimum-stability": "RC",
-  "autoload": {
-    "psr-4": {
-      "FS\\": "src/"
+    "name": "daanbiesterbos/solr-bundle",
+    "type": "symfony-bundle",
+    "description": "Symfony Solr integration bundle",
+    "keywords": [
+        "search",
+        "index",
+        "symfony",
+        "solr"
+    ],
+    "homepage": "https://github.com/daanbiesterbos/SolrBundle",
+    "license": "MIT",
+    "require": {
+        "php": "^7.3",
+        "solarium/solarium": "^4.0",
+        "symfony/dependency-injection": "^4.4|^5",
+        "symfony/cache": "^4.4|^5",
+        "symfony/http-kernel": "^4.4|^5",
+        "symfony/config": "^4.4|^5",
+        "symfony/doctrine-bridge": "^4.4|^5",
+        "minimalcode/search": "^1.0",
+        "ramsey/uuid": "^3.5|^4.1",
+        "myclabs/deep-copy": "^1.6",
+        "doctrine/annotations": "^1.7"
+    },
+    "require-dev": {
+        "roave/security-advisories": "dev-master",
+        "doctrine/mongodb-odm-bundle": "^4.2",
+        "doctrine/orm": "^2.4",
+        "doctrine/mongodb-odm": "^2.2",
+        "phpunit/phpunit": "^9"
+    },
+    "minimum-stability": "stable",
+    "replace": {
+        "floriansemm/solr-bundle": "^1.7"
+    },
+    "autoload": {
+        "psr-4": {
+            "FS\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Doctrine\\ODM\\MongoDB\\": "vendor/doctrine/mongodb-odm/lib/Doctrine/ODM/MongoDB/"
+        }
+    },
+    "config": {
+        "bin-dir": "bin"
+    },
+    "suggest": {
+        "doctrine/orm": "Required if you want to use the Doctrine ORM",
+        "doctrine/mongodb-odm-bundle": "Required if you want to use the MongoDB ODM"
+    },
+    "scripts": {
+        "unit-tests": [
+            "bin/phpunit --testsuite=SolrBundleUnitTests"
+        ],
+        "unit-tests:coverage": [
+            "@putenv XDEBUG_MODE=coverage",
+            "bin/phpunit --testsuite=SolrBundleUnitTests --coverage-clover=\".coverage/clover.xml\""
+        ],
+        "unit-tests:coverage-html": [
+            "@putenv XDEBUG_MODE=coverage",
+            "bin/phpunit --testsuite=SolrBundleUnitTests --coverage-html=\".coverage/code-coverage\""
+        ],
+        "integration-tests": [
+            "bin/phpunit --testsuite=SolrBundleIntegrationTests"
+        ]
     }
-  },
-  "autoload-dev": {
-    "psr-4": {
-      "Doctrine\\ODM\\MongoDB\\": "vendor/doctrine/mongodb-odm/lib/Doctrine/ODM/MongoDB/"
-    }
-  },
-  "config": {
-    "bin-dir": "bin"
-  },
-  "suggest": {
-    "doctrine/orm": "Required if you want to use the Doctrine ORM",
-    "doctrine/mongodb-odm-bundle": "Required if you want to use the MongoDB ODM"
-  }
 }

@@ -1,5 +1,16 @@
 <?php
 
+/*
+ * Solr Bundle
+ * This is a fork of the unmaintained solr bundle from Florian Semm.
+ *
+ * @author Daan Biesterbos     (fork maintainer)
+ * @author Florian Semm (author original bundle)
+ *
+ * Issues can be submitted here:
+ * https://github.com/daanbiesterbos/SolrBundle/issues
+ */
+
 namespace FS\SolrBundle\Tests\Fixtures;
 
 use FS\SolrBundle\Doctrine\Annotation as Solr;
@@ -10,6 +21,7 @@ use FS\SolrBundle\Doctrine\Annotation as Solr;
  */
 class ValidTestEntityFiltered
 {
+    public $shouldIndex = false;
     /**
      * @Solr\Id()
      *
@@ -18,8 +30,6 @@ class ValidTestEntityFiltered
     private $id;
 
     private $shouldBeIndexedWasCalled = false;
-
-    public $shouldIndex = false;
 
     public function shouldBeIndex()
     {

@@ -1,5 +1,16 @@
 <?php
 
+/*
+ * Solr Bundle
+ * This is a fork of the unmaintained solr bundle from Florian Semm.
+ *
+ * @author Daan Biesterbos     (fork maintainer)
+ * @author Florian Semm (author original bundle)
+ *
+ * Issues can be submitted here:
+ * https://github.com/daanbiesterbos/SolrBundle/issues
+ */
+
 namespace FS\SolrBundle\Client\Solarium;
 
 use FS\SolrBundle\Client\Builder;
@@ -8,19 +19,19 @@ use Solarium\Core\Plugin\AbstractPlugin;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 /**
- * Creates an instance of the Solarium Client
+ * Creates an instance of the Solarium Client.
  */
 class SolariumClientBuilder implements Builder
 {
     /**
      * @var array
      */
-    private $settings = array();
+    private $settings = [];
 
     /**
      * @var AbstractPlugin[]
      */
-    private $plugins = array();
+    private $plugins = [];
 
     /**
      * @var EventDispatcherInterface
@@ -71,8 +82,8 @@ class SolariumClientBuilder implements Builder
                         $options['host'] = $parsedDsn['host'];
                     }
                     if (isset($parsedDsn['user'])) {
-                        $auth = $parsedDsn['user'] . (isset($parsedDsn['pass']) ? ':' . $parsedDsn['pass'] : '');
-                        $options['host'] = $auth . '@' . $options['host'];
+                        $auth = $parsedDsn['user'].(isset($parsedDsn['pass']) ? ':'.$parsedDsn['pass'] : '');
+                        $options['host'] = $auth.'@'.$options['host'];
                     }
                     $options['port'] = isset($parsedDsn['port']) ? $parsedDsn['port'] : 80;
                     $options['path'] = isset($parsedDsn['path']) ? $parsedDsn['path'] : '';
@@ -82,7 +93,7 @@ class SolariumClientBuilder implements Builder
             $settings[$name] = $options;
         }
 
-        $solariumClient = new Client(array('endpoint' => $settings), $this->eventDispatcher);
+        $solariumClient = new Client(['endpoint' => $settings], $this->eventDispatcher);
         foreach ($this->plugins as $pluginName => $plugin) {
             $solariumClient->registerPlugin($pluginName, $plugin);
         }
