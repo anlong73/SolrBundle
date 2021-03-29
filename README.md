@@ -1,6 +1,6 @@
 SolrBundle
 ==========
-[![Build Status](https://github.com/daanbiesterbos/solr-bundle/actions/workflows/build/badge.svg)](https://github.com/daanbiesterbos/solr-bundle/actions/workflows/build/)
+[![Build SolrBundle](https://github.com/DaanBiesterbos/SolrBundle/actions/workflows/build.yaml/badge.svg)](https://github.com/DaanBiesterbos/SolrBundle/actions/workflows/build.yaml)
 [![Latest Stable Version](https://poser.pugx.org/daanbiesterbos/solr-bundle/v/stable.svg)](https://packagist.org/packages/daanbiesterbos/solr-bundle)
 [![Total Downloads](https://poser.pugx.org/daanbiesterbos/solr-bundle/downloads.svg)](https://packagist.org/packages/daanbiesterbos/solr-bundle)
 
@@ -21,26 +21,37 @@ Installation is a 3 step process:
 3. Configure the SolrBundle
 4. Configure your entity
 
-### Step 1: Download SolrBundle
+### Step 1: Install SolrBundle
 
-This bundle is available on Packagist. You can install it using Composer:
+This bundle is available on Packagist. You can install it using Composer.
+If you have not yet installed the Solr Bundle, this will be easy. Run the following command:
 
 ```bash
 composer require daanbiesterbos/solr-bundle
 ```
 
+
+**Important:**
+If you are currently using the original bundle the update is slightly more tricky. 
+
+When you remove the old bundle **or** when you change the bundle in composer.json, you'll run into issues.
+Symfony will temporarily not support the fs_solr configuration. Also, composer will automatically remove the bundle from bundles.php.
+In my opinion this is the most reliable way to migrate from the original bundle.
+
+ - Open composer.json.
+ - Rename *floriansemm/solr-bundle* to *daanbiesterbos/solr-bundle*.
+ - Run `composer update --no-scripts`, this will avoid a failing cache:clear command.
+ - Open *config/bundles.php*
+ - Add the bundle (again)
+
 ### Step 2: Enable the bundle
 
-Next, enable the bundle in the kernel:
+Add the bundle to *config/bundles.php*
 
 ```php
-public function registerBundles()
-{
-    $bundles = array(
-        // ...
-        new FS\SolrBundle\FSSolrBundle(),
-    );
-}
+return [
+    FS\SolrBundle\FSSolrBundle::class => ['all' => true],
+];
 ```
 
 ### Step 3: Configure the SolrBundle
