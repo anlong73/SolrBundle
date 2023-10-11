@@ -11,8 +11,8 @@
     "homepage": "https://github.com/daanbiesterbos/SolrBundle",
     "license": "MIT",
     "require": {
-        "php": "^7.3",
-        "solarium/solarium": "^4.0",
+        "php": "^7.4",
+        "solarium/solarium": "^6.0",
         "symfony/dependency-injection": "^4.4|^5",
         "symfony/cache": "^4.4|^5",
         "symfony/http-kernel": "^4.4|^5",
