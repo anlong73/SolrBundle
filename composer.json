@@ -1,5 +1,5 @@
 {
-    "name": "daanbiesterbos/solr-bundle",
+    "name": "anlong73/solr-bundle",
     "type": "symfony-bundle",
     "description": "Symfony Solr integration bundle",
     "keywords": [
